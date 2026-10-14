@@ -1,0 +1,17 @@
+import {test,expect} from '@playwright/test';
+const endpoint='https://api.mymemory.translated.net/get**';
+test('live mode default, click-only submission, no credentials, escaped output',async({page})=>{
+ let requests=0;await page.route(endpoint,async route=>{requests++;const r=route.request(),u=new URL(r.url());expect(u.searchParams.get('q')).toBe('a new blue umbrella');expect(u.searchParams.get('langpair')).toBe('en-GB|yue-HK');expect(r.headers().authorization).toBeUndefined();await route.fulfill({json:{responseStatus:200,responseData:{translatedText:'&lt;img src=x onerror=alert(1)&gt; 新譯文'}}});});
+ await page.goto('/');await page.getByLabel('待翻译文字').fill('a new blue umbrella');expect(requests).toBe(0);await page.getByRole('button',{name:'翻译',exact:true}).last().click();await expect(page.getByTestId('result')).toContainText('MyMemory');await expect(page.getByTestId('result')).toContainText('<img src=x onerror=alert(1)> 新譯文');await expect(page.locator('[data-testid=result] img')).toHaveCount(0);
+});
+test('late results cannot replace edits and quota failures are not saved',async({page})=>{
+ let release:()=>void=()=>{};const held=new Promise<void>(r=>release=r);await page.route(endpoint,async route=>{await held;await route.fulfill({json:{responseStatus:200,responseData:{translatedText:'過期結果'}}}).catch(()=>{});});
+ await page.goto('/');await page.getByLabel('待翻译文字').fill('old input');const sent=page.waitForRequest(r=>r.url().startsWith('https://api.mymemory'));await page.getByRole('button',{name:'翻译',exact:true}).last().click();await sent;await page.getByLabel('待翻译文字').fill('new input');release();await expect(page.getByTestId('result')).toHaveCount(0);
+ await page.unroute(endpoint);await page.route(endpoint,route=>route.fulfill({json:{responseStatus:200,quotaFinished:true,responseData:{translatedText:'MYMEMORY WARNING'}}}));await page.getByRole('button',{name:'翻译',exact:true}).last().click();await expect(page.getByRole('status')).toContainText('额度');await expect(page.getByTestId('result')).toHaveCount(0);await page.getByRole('button',{name:'记录',exact:true}).click();await expect(page.locator('.translation')).toHaveCount(0);
+});
+test('paragraph results, offline history and no translation service-worker cache',async({page,context})=>{
+ await page.route(endpoint,route=>route.fulfill({json:{responseStatus:200,responseData:{translatedText:new URL(route.request().url()).searchParams.get('q')==='First paragraph.'?'第一段。':'第二段。'}}}));
+ await page.goto('/Vokawa/');await page.evaluate(async()=>navigator.serviceWorker.ready);await page.reload();await page.getByLabel('待翻译文字').fill('First paragraph.\n\nSecond paragraph.');await page.getByRole('button',{name:'翻译',exact:true}).last().click();await expect(page.locator('[data-testid=result] .translation')).toHaveText('第一段。\n\n第二段。');
+ const urls=await page.evaluate(async()=>{const urls=[];for(const k of await caches.keys())for(const r of await(await caches.open(k)).keys())urls.push(r.url);return urls;});expect(urls.some(u=>u.includes('mymemory'))).toBe(false);
+ await context.setOffline(true);await page.reload();await page.getByLabel('待翻译文字').fill('new offline text');await page.getByRole('button',{name:'翻译',exact:true}).last().click();await expect(page.getByRole('status')).toContainText('联网');await page.getByRole('button',{name:'记录',exact:true}).click();await expect(page.locator('.translation')).toHaveText('第一段。\n\n第二段。');
+});

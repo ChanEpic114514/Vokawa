@@ -1,0 +1,42 @@
+[
+  {
+    "text": "呢個幾多錢？",
+    "jyutping": "ni1 go3 gei2 do1 cin2",
+    "file": "audio/sentences/demo-1.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "最近嘅車站喺邊度？",
+    "jyutping": "zeoi3 gan6 ge3 ce1 zaam6 hai2 bin1 dou6",
+    "file": "audio/sentences/demo-2.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "唔該講慢啲。",
+    "jyutping": "m4 goi1 gong2 maan6 di1",
+    "file": "audio/sentences/demo-3.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "我想要一杯水。",
+    "jyutping": "ngo5 soeng2 jiu3 jat1 bui1 seoi2",
+    "file": "audio/sentences/demo-4.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "你好！",
+    "jyutping": "nei5 hou2",
+    "file": "audio/sentences/demo-5.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  }
+]

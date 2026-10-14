@@ -1,0 +1,229 @@
+[
+  {
+    "text": "如果",
+    "jyutping": "jyu4 gwo2",
+    "file": "audio/words/word-01.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E5%A6%82%E6%9E%9C.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一半",
+    "jyutping": "jat1 bun3",
+    "file": "audio/words/word-02.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E5%8D%8A.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一樣",
+    "jyutping": "jat1 joeng6",
+    "file": "audio/words/word-03.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E6%A8%A3.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一生",
+    "jyutping": "jat1 sang1",
+    "file": "audio/words/word-04.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E7%94%9F.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一路",
+    "jyutping": "jat1 lou6",
+    "file": "audio/words/word-05.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E8%B7%AF.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一邊",
+    "jyutping": "jat1 bin1",
+    "file": "audio/words/word-06.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E9%82%8A.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "一齊",
+    "jyutping": "jat1 cai4",
+    "file": "audio/words/word-07.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%80%E9%BD%8A.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "三角",
+    "jyutping": "saam1 gok3",
+    "file": "audio/words/word-08.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%89%E8%A7%92.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "上升",
+    "jyutping": "soeng6 sing1",
+    "file": "audio/words/word-09.wav",
+    "kind": "真人词语",
+    "speaker": "Justinrleung",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Justinrleung-%E4%B8%8A%E5%8D%87.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "农业",
+    "jyutping": "nung4 jip6",
+    "file": "audio/words/word-11.wav",
+    "kind": "真人词语",
+    "speaker": "Luilui6666",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Luilui6666-%E5%86%9C%E4%B8%9A.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "農業",
+    "jyutping": "nung4 jip6",
+    "file": "audio/words/word-11.wav",
+    "kind": "真人词语",
+    "speaker": "Luilui6666",
+    "source": "https://commons.wikimedia.org/wiki/File:LL-Q9186_(yue)-Luilui6666-%E5%86%9C%E4%B8%9A.wav",
+    "license": "CC BY-SA 4.0"
+  },
+  {
+    "text": "銀行",
+    "jyutping": "ngan4 hong4",
+    "file": "audio/sentences/canto-01.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "音樂",
+    "jyutping": "jam1 ngok6",
+    "file": "audio/sentences/canto-03.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "快樂",
+    "jyutping": "faai3 lok6",
+    "file": "audio/sentences/canto-04.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "便宜",
+    "jyutping": "pin4 ji2",
+    "file": "audio/sentences/canto-06.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "唔該你講慢啲，我仲學緊廣東話。",
+    "jyutping": "m4 goi1 nei5 gong2 maan6 di1 ngo5 zung6 hok6 gan2 gwong2 dung1 waa2",
+    "file": "audio/sentences/canto-07.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "呢首音樂好好聽，聽完之後，我覺得好快樂。",
+    "jyutping": "ni1 sau2 jam1 ngok6 hou2 hou2 teng1 teng1 jyun4 zi1 hau6 ngo5 gok3 dak1 hou2 faai3 lok6",
+    "file": "audio/sentences/canto-09.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "聽日如果落雨，我哋就改搭地鐵去中環；如果天氣好，就先去海邊行下，再搵間餐廳食飯。",
+    "jyutping": "ting1 jat6 jyu4 gwo2 lok6 jyu5 ngo5 dei6 zau6 goi2 daap3 dei6 tit3 heoi3 zung1 waan4 jyu4 gwo2 tin1 hei3 hou2 zau6 sin1 heoi3 hoi2 bin1 haang4 haa6 zoi3 wan2 gaan1 caan1 teng1 sik6 faan6",
+    "file": "audio/sentences/canto-10.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "下星期三朝早九點半，請你帶齊文件去銀行，唔好遲到。",
+    "jyutping": "haa6 sing1 kei4 saam1 ziu1 zou2 gau2 dim2 bun3 ceng2 nei5 daai3 cai4 man4 gin2 heoi3 ngan4 hong4 m4 hou2 ci4 dou3",
+    "file": "audio/sentences/canto-11.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "行長",
+    "jyutping": "hong4 zoeng2",
+    "file": "audio/sentences/canto-13.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "數一數",
+    "jyutping": "sou2 jat1 sou2",
+    "file": "audio/sentences/canto-14.wav",
+    "kind": "Canto 词语",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "銀行行長今日會開會，開完會之後，我哋一齊去食飯。",
+    "jyutping": "ngan4 hong4 hong4 zoeng2 gam1 jat6 wui5 hoi1 wui2 hoi1 jyun4 wui2 zi1 hau6 ngo5 dei6 jat1 cai4 heoi3 sik6 faan6",
+    "file": "audio/sentences/canto-15.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "呢個幾多錢？",
+    "jyutping": "ni1 go3 gei2 do1 cin2",
+    "file": "audio/sentences/demo-1.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "最近嘅車站喺邊度？",
+    "jyutping": "zeoi3 gan6 ge3 ce1 zaam6 hai2 bin1 dou6",
+    "file": "audio/sentences/demo-2.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "唔該講慢啲。",
+    "jyutping": "m4 goi1 gong2 maan6 di1",
+    "file": "audio/sentences/demo-3.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "我想要一杯水。",
+    "jyutping": "ngo5 soeng2 jiu3 jat1 bui1 seoi2",
+    "file": "audio/sentences/demo-4.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  },
+  {
+    "text": "你好！",
+    "jyutping": "nei5 hou2",
+    "file": "audio/sentences/demo-5.wav",
+    "kind": "Canto 整句",
+    "source": "https://huggingface.co/typangaa/canto-tts-nano",
+    "license": "Apache-2.0 模型生成"
+  }
+]

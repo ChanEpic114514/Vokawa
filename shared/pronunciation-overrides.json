@@ -1,0 +1,16 @@
+{
+  "phrases": {
+    "銀行行長": "ngan4 hong4 hong4 zoeng2",
+    "银行行长": "ngan4 hong4 hong4 zoeng2",
+    "數一數": "sou2 jat1 sou2",
+    "数一数": "sou2 jat1 sou2",
+    "開完會": "hoi1 jyun4 wui2",
+    "开完会": "hoi1 jyun4 wui2"
+  },
+  "standalone": {
+    "行長": "hong4 zoeng2",
+    "行长": "hong4 zoeng2"
+  },
+  "note": "行長 standalone is interpreted as the bank-president noun. Do not override bare 行長 inside arbitrary sentences (e.g. 行長路). No effect on system audio.",
+  "source": "https://cantonese.sheik.co.uk/dictionary/characters/187/?full=true"
+}

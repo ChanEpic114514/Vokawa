@@ -1,0 +1,20 @@
+[
+  {
+    "text": "銀行行長今日會開會，開完會之後，我哋一齊去食飯。",
+    "seconds": 4.72,
+    "runtime_seconds": 14.33554371899936,
+    "file": "research/integrated-speech-1.wav"
+  },
+  {
+    "text": "數一數。",
+    "seconds": 1.04,
+    "runtime_seconds": 0.7877275539995026,
+    "file": "research/integrated-speech-2.wav"
+  },
+  {
+    "text": "聽日如果落雨，我哋就改搭地鐵去中環；如果天氣好，就先去海邊行下，再搵間餐廳食飯。",
+    "seconds": 8.95,
+    "runtime_seconds": 5.885976333000144,
+    "file": "research/integrated-speech-3.wav"
+  }
+]

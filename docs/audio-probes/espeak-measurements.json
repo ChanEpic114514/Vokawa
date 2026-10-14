@@ -1,0 +1,23 @@
+[
+  {
+    "file": "espeak-word.wav",
+    "sample_rate": 22050,
+    "channels": 1,
+    "duration_seconds": 1.261,
+    "frames": 27807
+  },
+  {
+    "file": "espeak-long.wav",
+    "sample_rate": 22050,
+    "channels": 1,
+    "duration_seconds": 5.244,
+    "frames": 115633
+  },
+  {
+    "file": "espeak-single.wav",
+    "sample_rate": 22050,
+    "channels": 1,
+    "duration_seconds": 0.565,
+    "frames": 12463
+  }
+]

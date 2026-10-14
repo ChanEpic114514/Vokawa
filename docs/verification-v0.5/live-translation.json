@@ -1,0 +1,162 @@
+{
+  "timestamp": "2026-10-14T13:18:39.836Z",
+  "mode": "Real browser, actual MyMemory API, no mocks",
+  "testProxyTLSException": true,
+  "iphone": "not tested",
+  "quality": "Results for review, not a linguistic certification",
+  "pageErrors": [],
+  "results": [
+    {
+      "source": "en",
+      "target": "yue",
+      "input": "water",
+      "translation": "水",
+      "error": null,
+      "seconds": 17.731
+    },
+    {
+      "source": "en",
+      "target": "yue",
+      "input": "train station",
+      "translation": "火車站",
+      "error": null,
+      "seconds": 0.395
+    },
+    {
+      "source": "en",
+      "target": "yue",
+      "input": "Please keep my blue umbrella at the front desk until Friday.",
+      "translation": "請將我嘅藍色雨傘放喺前台直至星期五。",
+      "error": null,
+      "seconds": 0.356
+    },
+    {
+      "source": "zh",
+      "target": "yue",
+      "input": "吃",
+      "translation": "食",
+      "error": null,
+      "seconds": 0.392
+    },
+    {
+      "source": "zh",
+      "target": "yue",
+      "input": "钱包",
+      "translation": "銀包",
+      "error": null,
+      "seconds": 0.382
+    },
+    {
+      "source": "zh",
+      "target": "yue",
+      "input": "我不是忘记带文件，而是把文件放在了另一只袋子里。",
+      "translation": "我唔係唔記得帶文件，而係將文件放咗喺另一隻袋入面。",
+      "error": null,
+      "seconds": 0.365
+    },
+    {
+      "source": "yue",
+      "target": "zh",
+      "input": "佢",
+      "translation": "他",
+      "error": null,
+      "seconds": 0.473
+    },
+    {
+      "source": "yue",
+      "target": "zh",
+      "input": "鎖匙",
+      "translation": "钥匙",
+      "error": null,
+      "seconds": 0.403
+    },
+    {
+      "source": "yue",
+      "target": "zh",
+      "input": "我今晚唔返屋企食飯，你哋唔使等我。",
+      "translation": "我今晚不回家吃饭，你们不用等我。",
+      "error": null,
+      "seconds": 0.443
+    },
+    {
+      "source": "yue",
+      "target": "en",
+      "input": "瞓",
+      "translation": "Sleep",
+      "error": null,
+      "seconds": 0.423
+    },
+    {
+      "source": "yue",
+      "target": "en",
+      "input": "落雨",
+      "translation": "rain",
+      "error": null,
+      "seconds": 0.427
+    },
+    {
+      "source": "yue",
+      "target": "en",
+      "input": "如果聽朝落雨，我哋就搭地鐵去博物館。",
+      "translation": "If it rains tomorrow morning, we take the subway to the museum.",
+      "error": null,
+      "seconds": 0.378
+    },
+    {
+      "source": "en",
+      "target": "zh",
+      "input": "tree",
+      "translation": "树",
+      "error": null,
+      "seconds": 0.562
+    },
+    {
+      "source": "en",
+      "target": "zh",
+      "input": "boarding pass",
+      "translation": "登船证,登机证",
+      "error": null,
+      "seconds": 0.518
+    },
+    {
+      "source": "en",
+      "target": "zh",
+      "input": "The meeting starts at 9:30, not 8:30. Please bring two copies.",
+      "translation": "会议从9:30开始，而不是8:30。请携带两份。",
+      "error": null,
+      "seconds": 0.545
+    },
+    {
+      "source": "zh",
+      "target": "en",
+      "input": "猫",
+      "translation": "The cats",
+      "error": null,
+      "seconds": 0.421
+    },
+    {
+      "source": "zh",
+      "target": "en",
+      "input": "图书馆",
+      "translation": "Library",
+      "error": null,
+      "seconds": 0.413
+    },
+    {
+      "source": "zh",
+      "target": "en",
+      "input": "我已经买了三张票，但是还没有收到确认邮件。",
+      "translation": "I have bought three tickets but have not received a confirmation email.",
+      "error": null,
+      "seconds": 1.182
+    },
+    {
+      "source": "zh",
+      "target": "yue",
+      "input": "下星期三我们原本计划一起去郊外散步，不过天气预报说明天开始会连续下雨，所以我想先问问大家的意见。要是你们觉得不方便，我们可以改到星期六上午再出发，也可以选择留在市区，找一家安静的餐厅吃午饭，然后去附近的博物馆看看。请你收到消息以后，在今天晚上九点之前告诉我你的选择，我好提前订位和买票。如果有人需要带小朋友一起来，也请告诉我人数，我会确认餐厅有没有儿童座椅，以及博物馆是否需要另外预约。",
+      "translation": "下星期三我哋原本計劃一齊去郊外散步，不過天氣預報話聽日開始會連續落雨，所以我想先問問大家嘅意見。如果你哋覺得唔方便，我哋可以改到星期六上午再出發，亦可以選擇留喺市區，搵間安靜嘅餐廳食午餐，然後去附近嘅博物館睇下。請你收到消息之後，喺今晚九點之前話我知你嘅選擇，我好提前訂位同買票。如果有人需要帶小朋友一齊嚟，亦請話我知人數，我會確認餐廳有冇兒童座椅，以及博物館係咪需要另外預約。",
+      "error": null,
+      "seconds": 0.728
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+-r requirements.txt
+canto-tts==0.1.3

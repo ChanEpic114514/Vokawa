@@ -1,0 +1,25 @@
+{
+  "real_service": "local Gradio 5.49.1 + actual Canto model",
+  "text": "行長想食飯。",
+  "selected": "hong4 zoeng2",
+  "wav_bytes": 445484,
+  "decoded_seconds": 2.3199773242630384,
+  "requests": [
+    {
+      "url": "http://127.0.0.1:7861/gradio_api/call/generate",
+      "authorization": null
+    },
+    {
+      "url": "http://127.0.0.1:7861/gradio_api/call/generate/9be3395aa93544f793fa421c4483c233",
+      "authorization": null
+    },
+    {
+      "url": "http://127.0.0.1:7861/gradio_api/file=/tmp/gradio/e1d4124c719b2f4275c60065e25e1a52b9fd484c970a5549da19f6d2cc611872/tmpufhlyz88.wav",
+      "authorization": null
+    }
+  ],
+  "js_errors": [],
+  "cloud_deployment": "NOT PERFORMED",
+  "iphone": "NOT TESTED",
+  "audible_improvement": "NOT HUMAN REVIEWED"
+}
