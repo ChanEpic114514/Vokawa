@@ -1577,3 +1577,5 @@ input[type="range"] {
     scroll-behavior: auto !important;
   }
 }
+
+.release-link { color: var(--muted, #aaa); font-size: 0.75rem; white-space: nowrap; text-decoration: none; }

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       injectRegister: "auto",
       includeAssets: ["vokawa-icon-v2.png", "THIRD_PARTY_NOTICES.txt"],
       manifest: {
@@ -29,6 +29,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        globIgnores: ["api/update.html"],
         runtimeCaching: [
           {
             urlPattern: /\/audio\/(?:ekho|words|sentences)\/[a-z0-9-]+\.wav$/,

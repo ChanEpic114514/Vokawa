@@ -1,3 +1,4 @@
+import { RELEASE } from "./release";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   apiCall,
@@ -557,7 +558,7 @@ export default function App({
             <br />
             {t("都有它的回响。", "a new connection.")}
           </p>
-          <span>VOKAWA · 0.6</span>
+          <span>VOKAWA · {RELEASE}</span>
         </div>
       </aside>
       <div className="workspace">
@@ -568,6 +569,7 @@ export default function App({
             {t(...tabNames[tab])}
           </span>
           <div className="topbar-tools">
+            <a className="release-link" href={`${import.meta.env.BASE_URL}api/update.html`} onClick={stop} aria-label={t("检查更新", "Check for updates")}>v{RELEASE}</a>
             <span className={`connection ${online ? "" : "offline"}`}>
               <i />
               {online ? t("已连接", "Online") : t("离线", "Offline")}

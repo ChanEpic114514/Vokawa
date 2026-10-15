@@ -1,3 +1,4 @@
+import { RELEASE } from "./release";
 import {
   forwardRef,
   useEffect,
@@ -324,6 +325,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
   const active = phase !== "off";
   return (
     <div className="wake-panel">
+      <p className="muted">Vokawa {RELEASE} · <a href={`${import.meta.env.BASE_URL}api/update.html`} onClick={stop}>{t("检查更新", "Check for updates")}</a></p>
       <div className="wake-intro">
         <div className="wake-orb" aria-hidden="true">
           <Icon name="magic" size={28} />
@@ -409,6 +411,17 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
             )}
             {calibrationFailed && (
               <>
+                <details>
+                  <summary>{t("校准详情（可复制反馈）", "Calibration details (copy for support)")}</summary>
+                  <p>{t("距离越小表示声学匹配越接近；这里不判断句子意思。", "Smaller distances indicate a closer acoustic match; this does not compare meaning.")}</p>
+                  <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{JSON.stringify({
+                    version: RELEASE,
+                    matching: positive.map(value => Number.isFinite(value) ? value : "unmatched"),
+                    different: negative.map(value => Number.isFinite(value) ? value : "unmatched"),
+                    maxMatching: Math.max(...positive),
+                    minDifferent: Math.min(...negative),
+                  }, null, 2)}</pre>
+                </details>
                 <button
                   disabled={active}
                   onClick={() => {
