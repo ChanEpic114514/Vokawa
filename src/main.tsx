@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {createRoot} from 'react-dom/client';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   names,
   phrases,
@@ -8,44 +8,135 @@ import {
   apiCall,
   type Entry,
   type Lang,
-  type Settings
+  type Settings,
 } from './model';
-import {Speaker, matches} from './speech';
-import {EkhoPlayer, recordingURL} from './ekho';
-import {CantonesePlayer, selectedReadings} from './cantonese';
+import { Speaker, matches } from './speech';
+import { EkhoPlayer, recordingURL } from './ekho';
+import { CantonesePlayer, selectedReadings } from './cantonese';
 import phraseAudio from './phrase-audio.json';
-import {Microphone} from './microphone';
-import {pronunciation, jyutping} from './pronunciation';
-import {onlineTranslate} from './translation';
+import { Microphone } from './microphone';
+import { pronunciation, jyutping } from './pronunciation';
+import { onlineTranslate } from './translation';
 import './style.css';
 
 const initial = loadSaved();
+
 const tabs = ['翻译', '对话', '粤语朗读', '记录', '设置'] as const;
 
 type Tab = typeof tabs[number];
+
+type CantoneseCharactersProps = {
+  text: string;
+  onPlay: (reading: string) => void;
+  onStop: () => void;
+};
+
+function CantoneseCharacters({
+  text,
+  onPlay,
+  onStop,
+}: CantoneseCharactersProps) {
+  const candidates = useMemo(() => pronunciation(text), [text]);
+
+  const [selected, setSelected] = useState<Record<number, string>>({});
+
+  return (
+    <section
+      className="samples"
+      aria-label="译文逐字粤语发音"
+      data-testid="translation-character-audio"
+    >
+      <h3>逐字粤语发音</h3>
+
+      <p className="hint">
+        点击“单字录音”播放 Ekho 发音。
+        多音字可以选择读音；默认候选不保证符合当前句意。
+        这里的选择不会改变整句系统朗读。
+      </p>
+
+      <div className="readings">
+        {candidates.map(([char, readings], index) => {
+          const current = selected[index] || readings[0] || '';
+          const available = Boolean(current && recordingURL(current));
+
+          return (
+            <div className="reading" key={index}>
+              <span>{char}</span>
+
+              {readings.length > 1 ? (
+                <select
+                  aria-label={`${char}的译文候选读音 ${index + 1}`}
+                  value={current}
+                  onChange={event => {
+                    const value = event.target.value;
+                    onStop();
+
+                    setSelected(previous => ({
+                      ...previous,
+                      [index]: value,
+                    }));
+                  }}
+                >
+                  {readings.map(reading => (
+                    <option key={reading} value={reading}>
+                      {reading}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <small>{current || '—'}</small>
+              )}
+
+              {current && (
+                <button
+                  type="button"
+                  aria-label={`播放译文第${index + 1}字${char}的录音`}
+                  disabled={!available}
+                  title={available ? `播放 ${current}` : '暂无对应录音'}
+                  onClick={() => onPlay(current)}
+                >
+                  {available ? '单字录音' : '暂无录音'}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function App() {
   const [tab, setTab] = useState<Tab>('翻译');
   const [settings, setSettings] = useState<Settings>(initial.settings);
   const [history, setHistory] = useState<Entry[]>(initial.history);
+
   const [src, setSrc] = useState<Lang>('en');
   const [dst, setDst] = useState<Lang>('yue');
+
   const [input, setInput] = useState('');
   const [result, setResult] = useState<Entry | null>(null);
   const [turns, setTurns] = useState<Entry[]>([]);
+
   const [reverse, setReverse] = useState(false);
   const [busy, setBusy] = useState(false);
+
   const [message, setMessage] = useState('');
   const [token, setToken] = useState('');
+
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [recording, setRecording] = useState(false);
+
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState(false);
+
   const [full, setFull] = useState('');
   const [online, setOnline] = useState(navigator.onLine);
+
   const [reading, setReading] = useState(
     '銀行行長今日會開會，開完會之後，我哋一齊去食飯。'
   );
+
   const [choices, setChoices] = useState<Record<number, string>>({});
   const [offlineReady, setOfflineReady] = useState(false);
 
@@ -53,6 +144,7 @@ function App() {
   const canto = useRef(new CantonesePlayer());
   const speaker = useRef(new Speaker());
   const mic = useRef(new Microphone());
+
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -76,11 +168,11 @@ function App() {
     canto.current.stop();
   }
 
-  function changeTab(t: Tab) {
+  function changeTab(nextTab: Tab) {
     cancel();
     stop();
     setMessage('');
-    setTab(t);
+    setTab(nextTab);
   }
 
   function updateInput(text: string) {
@@ -95,7 +187,10 @@ function App() {
     value: Settings[K]
   ) {
     cancel();
-    setSettings(s => ({...s, [key]: value}));
+    setSettings(previous => ({
+      ...previous,
+      [key]: value,
+    }));
   }
 
   function refreshVoices() {
@@ -110,7 +205,7 @@ function App() {
     try {
       localStorage.setItem(
         'vokawa-v2',
-        JSON.stringify({settings, history})
+        JSON.stringify({ settings, history })
       );
     } catch {
       setMessage('本机存储不可用或已满；记录可能无法保存。');
@@ -137,7 +232,9 @@ function App() {
       cancel();
     };
 
-    const network = () => setOnline(navigator.onLine);
+    const network = () => {
+      setOnline(navigator.onLine);
+    };
 
     document.addEventListener('visibilitychange', hide);
     window.addEventListener('pagehide', pagehide);
@@ -145,7 +242,9 @@ function App() {
     window.addEventListener('offline', network);
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(() => setOfflineReady(true));
+      navigator.serviceWorker.ready.then(() => {
+        setOfflineReady(true);
+      });
     }
 
     return () => {
@@ -164,6 +263,7 @@ function App() {
     };
   }, []);
 
+  // 翻译结果及原文的整句播放使用系统声音。
   function play(text: string, lang: Lang) {
     stop();
 
@@ -175,8 +275,20 @@ function App() {
         settings.rate,
         setMessage
       );
-    } catch (e) {
-      setMessage((e as Error).message);
+    } catch (error) {
+      setMessage((error as Error).message);
+    }
+  }
+
+  // 翻译结果中的单字播放使用 Ekho 录音。
+  function playCharacter(readingKey: string) {
+    stop();
+    setMessage('');
+
+    try {
+      ekho.current.play(readingKey, setMessage);
+    } catch (error) {
+      setMessage((error as Error).message);
     }
   }
 
@@ -193,7 +305,7 @@ function App() {
       speaker.current.stop();
 
       const key = selectedReadings(text, selected)
-        .find(r => r.jyutping)?.jyutping;
+        .find(item => item.jyutping)?.jyutping;
 
       if (key) {
         ekho.current.play(key, setMessage);
@@ -215,7 +327,9 @@ function App() {
         token,
         settings.rate,
         setMessage
-      ).catch(e => setMessage(e.message));
+      ).catch(error => {
+        setMessage(error.message);
+      });
 
       return;
     }
@@ -228,8 +342,8 @@ function App() {
         settings.rate,
         setMessage
       );
-    } catch (e) {
-      setMessage((e as Error).message);
+    } catch (error) {
+      setMessage((error as Error).message);
     }
   }
 
@@ -251,8 +365,8 @@ function App() {
         setRecording,
         setMessage
       );
-    } catch (e) {
-      setMessage((e as Error).message);
+    } catch (error) {
+      setMessage((error as Error).message);
     }
   }
 
@@ -276,7 +390,9 @@ function App() {
     const controller = new AbortController();
     request.current = controller;
 
-    const timeout = setTimeout(() => controller.abort(), 180000);
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 180000);
 
     try {
       const data = settings.demo
@@ -304,11 +420,11 @@ function App() {
                 source,
                 target,
                 context: tab === '对话'
-                  ? turns.slice(-6).map(e => ({
-                      sourceText: e.sourceText,
-                      targetText: e.targetText
+                  ? turns.slice(-6).map(entry => ({
+                      sourceText: entry.sourceText,
+                      targetText: entry.targetText,
                     }))
-                  : []
+                  : [],
               },
               controller.signal
             );
@@ -330,32 +446,34 @@ function App() {
         targetText: data.translation,
         engine: data.engine || '翻译服务',
         favorite: false,
-        notice: 'notice' in data ? String(data.notice) : undefined
+        notice: 'notice' in data ? String(data.notice) : undefined,
       };
 
       setMessage('');
       setResult(entry);
 
       if (settings.save) {
-        setHistory(h =>
-          [entry, ...h].filter((e, i) => e.favorite || i < 500)
+        setHistory(previous =>
+          [entry, ...previous].filter(
+            (item, index) => item.favorite || index < 500
+          )
         );
       }
 
       if (tab === '对话') {
-        setTurns(t => [...t, entry]);
+        setTurns(previous => [...previous, entry]);
         setInput('');
       }
 
       if (settings.auto) {
         play(entry.targetText, target);
       }
-    } catch (e) {
+    } catch (error) {
       if (id === generation.current) {
         setMessage(
-          (e as Error).name === 'AbortError'
+          (error as Error).name === 'AbortError'
             ? '请求超时，请重试。'
-            : (e as Error).message
+            : (error as Error).message
         );
       }
     } finally {
@@ -369,14 +487,14 @@ function App() {
   }
 
   function favorite(entry: Entry) {
-    setHistory(h =>
-      h.some(e => e.id === entry.id)
-        ? h.map(e =>
-            e.id === entry.id
-              ? {...e, favorite: !e.favorite}
-              : e
+    setHistory(previous =>
+      previous.some(item => item.id === entry.id)
+        ? previous.map(item =>
+            item.id === entry.id
+              ? { ...item, favorite: !item.favorite }
+              : item
           )
-        : [{...entry, favorite: true}, ...h]
+        : [{ ...entry, favorite: true }, ...previous]
     );
   }
 
@@ -390,15 +508,28 @@ function App() {
         <p className="translation">{entry.targetText}</p>
 
         {entry.target === 'yue' && settings.jp && (
-          <p className="jyutping">{jyutping(entry.targetText)}</p>
+          <p className="jyutping">
+            {jyutping(entry.targetText)}
+          </p>
         )}
 
         {entry.notice && (
           <p className="hint">{entry.notice}</p>
         )}
 
+        {tab === '翻译' && entry.target === 'yue' && (
+          <CantoneseCharacters
+            key={`${entry.id}:${entry.targetText}`}
+            text={entry.targetText}
+            onStop={stop}
+            onPlay={playCharacter}
+          />
+        )}
+
         <div className="actions">
-          <button onClick={() => play(entry.targetText, entry.target)}>
+          <button
+            onClick={() => play(entry.targetText, entry.target)}
+          >
             播放{entry.target === 'yue' ? '粤语' : ''}
           </button>
 
@@ -406,7 +537,9 @@ function App() {
             aria-label="收藏"
             onClick={() => favorite(entry)}
           >
-            {history.some(e => e.id === entry.id && e.favorite)
+            {history.some(item =>
+              item.id === entry.id && item.favorite
+            )
               ? '★ 已收藏'
               : '☆ 收藏'}
           </button>
@@ -415,7 +548,9 @@ function App() {
             onClick={() =>
               navigator.clipboard?.writeText(entry.targetText)
                 .then(() => setMessage('已复制'))
-                .catch(() => setMessage('复制失败，请选中文字复制。'))
+                .catch(() => {
+                  setMessage('复制失败，请选中文字复制。');
+                })
             }
           >
             复制
@@ -442,15 +577,17 @@ function App() {
           <select
             aria-label="原文语言"
             value={src}
-            onChange={e => {
+            onChange={event => {
               cancel();
               stop();
-              setSrc(e.target.value as Lang);
+              setSrc(event.target.value as Lang);
               setResult(null);
             }}
           >
-            {Object.entries(names).map(([k, n]) => (
-              <option value={k} key={k}>{n}</option>
+            {Object.entries(names).map(([key, name]) => (
+              <option value={key} key={key}>
+                {name}
+              </option>
             ))}
           </select>
         </label>
@@ -474,15 +611,17 @@ function App() {
           <select
             aria-label="译文语言"
             value={dst}
-            onChange={e => {
+            onChange={event => {
               cancel();
               stop();
-              setDst(e.target.value as Lang);
+              setDst(event.target.value as Lang);
               setResult(null);
             }}
           >
-            {Object.entries(names).map(([k, n]) => (
-              <option value={k} key={k}>{n}</option>
+            {Object.entries(names).map(([key, name]) => (
+              <option value={key} key={key}>
+                {name}
+              </option>
             ))}
           </select>
         </label>
@@ -515,13 +654,13 @@ function App() {
 
       <main>
         <nav aria-label="主要导航">
-          {tabs.map(t => (
+          {tabs.map(item => (
             <button
-              key={t}
-              aria-current={tab === t ? 'page' : undefined}
-              onClick={() => changeTab(t)}
+              key={item}
+              aria-current={tab === item ? 'page' : undefined}
+              onClick={() => changeTab(item)}
             >
-              {t}
+              {item}
             </button>
           ))}
         </nav>
@@ -565,28 +704,31 @@ function App() {
                   </small>
                 </div>
 
-                {turns.map(e => (
-                  <section key={e.id}>
+                {turns.map(entry => (
+                  <section key={entry.id}>
                     <p className="source">
-                      {names[e.source]} · {e.sourceText}
+                      {names[entry.source]} · {entry.sourceText}
                     </p>
-                    {card(e)}
+
+                    {card(entry)}
                   </section>
                 ))}
 
                 <div className="actions">
-                  {[false, true].map(r => (
+                  {[false, true].map(isReverse => (
                     <button
-                      className={reverse === r ? 'selected' : ''}
-                      key={String(r)}
+                      className={
+                        reverse === isReverse ? 'selected' : ''
+                      }
+                      key={String(isReverse)}
                       onClick={() => {
                         cancel();
                         stop();
-                        setReverse(r);
+                        setReverse(isReverse);
                         setInput('');
                       }}
                     >
-                      {names[r ? dst : src]} 说话
+                      {names[isReverse ? dst : src]} 说话
                     </button>
                   ))}
                 </div>
@@ -603,7 +745,7 @@ function App() {
                 aria-label="待翻译文字"
                 value={input}
                 maxLength={3000}
-                onChange={e => updateInput(e.target.value)}
+                onChange={event => updateInput(event.target.value)}
                 placeholder="输入任意字、词或句子，点击翻译…"
               />
 
@@ -646,11 +788,14 @@ function App() {
 
             <button
               className="primary wide"
-              onClick={() =>
-                busy
-                  ? (cancel(), setMessage('已取消翻译。'))
-                  : void translate()
-              }
+              onClick={() => {
+                if (busy) {
+                  cancel();
+                  setMessage('已取消翻译。');
+                } else {
+                  void translate();
+                }
+              }}
             >
               {busy ? '取消翻译' : '翻译'}
             </button>
@@ -663,20 +808,22 @@ function App() {
 
             <details className="samples">
               <summary>载入示例句子</summary>
-              {phrases.map((p, i) => (
+
+              {phrases.map((phrase, index) => (
                 <button
-                  key={i}
-                  onClick={() => updateInput(p[pair[0]])}
+                  key={index}
+                  onClick={() => updateInput(phrase[pair[0]])}
                 >
-                  {p[pair[0]]}
+                  {phrase[pair[0]]}
                 </button>
               ))}
             </details>
 
             <p className="hint">
-              译文播放使用系统声音；
+              整句播放使用系统声音；
               粤语采用设置中的本地香港粤语声音，无需语音后端。
-              系统自行判断读音，显示的粤拼不会控制系统发音。
+              粤语译文下方的单字按钮使用 Ekho 录音。
+              系统自行判断整句读音，逐字候选选择不会控制系统发音。
             </p>
           </>
         )}
@@ -699,9 +846,9 @@ function App() {
                 id="reading"
                 value={reading}
                 maxLength={3000}
-                onChange={e => {
+                onChange={event => {
                   stop();
-                  setReading(e.target.value);
+                  setReading(event.target.value);
                   setChoices({});
                 }}
               />
@@ -709,7 +856,9 @@ function App() {
               <div className="actions">
                 <button
                   className="primary"
-                  onClick={() => playWorkbench(reading, 'yue', choices)}
+                  onClick={() => {
+                    playWorkbench(reading, 'yue', choices);
+                  }}
                 >
                   播放粤语音频
                 </button>
@@ -730,23 +879,27 @@ function App() {
                         settings.rate,
                         setMessage
                       );
-                    } catch (e) {
-                      setMessage((e as Error).message);
+                    } catch (error) {
+                      setMessage((error as Error).message);
                     }
                   }}
                 >
                   系统试听（未审核）
                 </button>
 
-                <button onClick={stop}>停止播放</button>
+                <button onClick={stop}>
+                  停止播放
+                </button>
               </div>
             </section>
 
             <div className="notice">
               单字使用 Ekho；已收录完整词语使用真人录音；
               句子使用 Canto-TTS。
-              候选选择决定发送给模型的读音，但不保证每次合成完全正确。
-              首次生成新句子需连接语音服务；不会自动改用系统声音。
+              候选选择决定发送给模型的读音，
+              但不保证每次合成完全正确。
+              首次生成新句子需连接语音服务；
+              不会自动改用系统声音。
               句子仍可能偶尔漏字或节奏不稳。
             </div>
 
@@ -754,24 +907,26 @@ function App() {
               <h3>上下文候选读音</h3>
 
               <div className="readings">
-                {candidates.map(([char, values], i) => (
-                  <label key={i} className="reading">
+                {candidates.map(([char, values], index) => (
+                  <label key={index} className="reading">
                     <span>{char}</span>
 
                     {values.length > 1 ? (
                       <select
-                        aria-label={`${char}的候选读音 ${i + 1}`}
-                        value={choices[i] || values[0]}
-                        onChange={e => {
+                        aria-label={`${char}的候选读音 ${index + 1}`}
+                        value={choices[index] || values[0]}
+                        onChange={event => {
+                          const value = event.target.value;
                           stop();
-                          setChoices(c => ({
-                            ...c,
-                            [i]: e.target.value
+
+                          setChoices(previous => ({
+                            ...previous,
+                            [index]: value,
                           }));
                         }}
                       >
-                        {values.map(p => (
-                          <option key={p}>{p}</option>
+                        {values.map(value => (
+                          <option key={value}>{value}</option>
                         ))}
                       </select>
                     ) : (
@@ -780,12 +935,19 @@ function App() {
 
                     {values.length > 0 && (
                       <button
-                        aria-label={`播放${char}的单字录音 ${i + 1}`}
-                        disabled={!recordingURL(choices[i] || values[0])}
+                        aria-label={
+                          `播放${char}的单字录音 ${index + 1}`
+                        }
+                        disabled={
+                          !recordingURL(
+                            choices[index] || values[0]
+                          )
+                        }
                         onClick={() => {
                           stop();
+
                           ekho.current.play(
-                            choices[i] || values[0],
+                            choices[index] || values[0],
                             setMessage
                           );
                         }}
@@ -802,13 +964,16 @@ function App() {
                 data-testid="chosen-jyutping"
               >
                 {candidates
-                  .map(([, v], i) => choices[i] || v[0] || '')
+                  .map(([, values], index) =>
+                    choices[index] || values[0] || ''
+                  )
                   .filter(Boolean)
                   .join(' ')}
               </p>
 
               <small>
-                词典候选含异读，不代表全部都是现代香港常用读音。
+                词典候选含异读，
+                不代表全部都是现代香港常用读音。
                 默认首选来自词语匹配，不能完全理解句意。
               </small>
             </section>
@@ -817,35 +982,41 @@ function App() {
               <h3>内置完整录音</h3>
 
               <p>
-                这些词语和句子已随网站提供，首次取得后可离线播放。
+                这些词语和句子已随网站提供，
+                首次取得后可离线播放。
               </p>
 
               <div className="actions">
                 {phraseAudio
-                  .filter((r, i, a) =>
-                    a.findIndex(x => x.text === r.text) === i
+                  .filter((item, index, all) =>
+                    all.findIndex(other =>
+                      other.text === item.text
+                    ) === index
                   )
-                  .map(r => (
+                  .map(item => (
                     <button
-                      key={r.text}
+                      key={item.text}
                       onClick={() => {
                         stop();
-                        setReading(r.text);
+                        setReading(item.text);
 
-                        let n = 0;
-                        const jp = r.jyutping.split(' ');
+                        let position = 0;
+                        const readings = item.jyutping.split(' ');
                         const chosen: Record<number, string> = {};
 
-                        pronunciation(r.text).forEach(([, v], i) => {
-                          if (v.length) {
-                            chosen[i] = jp[n++] || v[0];
+                        pronunciation(item.text).forEach(
+                          ([, values], index) => {
+                            if (values.length) {
+                              chosen[index] =
+                                readings[position++] || values[0];
+                            }
                           }
-                        });
+                        );
 
                         setChoices(chosen);
                       }}
                     >
-                      {r.text}
+                      {item.text}
                     </button>
                   ))}
               </div>
@@ -866,17 +1037,17 @@ function App() {
                 '行',
                 '銀行行長',
                 '音樂與快樂',
-                '我今日想搭地鐵去中環，之後同朋友食飯。'
-              ].map(t => (
+                '我今日想搭地鐵去中環，之後同朋友食飯。',
+              ].map(text => (
                 <button
-                  key={t}
+                  key={text}
                   onClick={() => {
                     stop();
-                    setReading(t);
+                    setReading(text);
                     setChoices({});
                   }}
                 >
-                  {t}
+                  {text}
                 </button>
               ))}
             </div>
@@ -891,7 +1062,7 @@ function App() {
               aria-label="搜索记录"
               placeholder="搜索原文或译文"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={event => setSearch(event.target.value)}
             />
 
             <label className="setting">
@@ -899,27 +1070,35 @@ function App() {
               <input
                 type="checkbox"
                 checked={favorites}
-                onChange={e => setFavorites(e.target.checked)}
+                onChange={event =>
+                  setFavorites(event.target.checked)
+                }
               />
             </label>
 
             {history
-              .filter(e =>
-                (!favorites || e.favorite) &&
-                (e.sourceText + e.targetText)
+              .filter(entry =>
+                (!favorites || entry.favorite) &&
+                (entry.sourceText + entry.targetText)
                   .toLowerCase()
                   .includes(search.toLowerCase())
               )
-              .map(e => (
-                <section key={e.id}>
-                  <p className="source">{e.sourceText}</p>
+              .map(entry => (
+                <section key={entry.id}>
+                  <p className="source">
+                    {entry.sourceText}
+                  </p>
 
-                  {card(e)}
+                  {card(entry)}
 
                   <button
-                    onClick={() =>
-                      setHistory(h => h.filter(x => x.id !== e.id))
-                    }
+                    onClick={() => {
+                      setHistory(previous =>
+                        previous.filter(item =>
+                          item.id !== entry.id
+                        )
+                      );
+                    }}
                   >
                     删除记录
                   </button>
@@ -945,15 +1124,19 @@ function App() {
                 语音服务类型
                 <select
                   value={settings.speechKind}
-                  onChange={e => {
+                  onChange={event => {
                     stop();
+
                     setting(
                       'speechKind',
-                      e.target.value as 'fastapi' | 'gradio'
+                      event.target.value as 'fastapi' | 'gradio'
                     );
                   }}
                 >
-                  <option value="fastapi">FastAPI 后端</option>
+                  <option value="fastapi">
+                    FastAPI 后端
+                  </option>
+
                   <option value="gradio">
                     Gradio / Hugging Face Space
                   </option>
@@ -964,9 +1147,9 @@ function App() {
                 语音服务地址
                 <input
                   value={settings.speechApi}
-                  onChange={e => {
+                  onChange={event => {
                     stop();
-                    setting('speechApi', e.target.value);
+                    setting('speechApi', event.target.value);
                   }}
                   placeholder="/api 或 https://你的服务.hf.space"
                 />
@@ -975,13 +1158,16 @@ function App() {
               <p>
                 单字及内置完整录音不依赖模型服务。
                 新句子的文字和粤拼会发送到此地址；
-                返回音频只保留在当前页面内存，不自动存入离线缓存。
-                语速控制保持音高，但不能保证修复节奏或漏字。
+                返回音频只保留在当前页面内存，
+                不自动存入离线缓存。
+                语速控制保持音高，
+                但不能保证修复节奏或漏字。
               </p>
 
               <p>
                 FastAPI 使用下方连接令牌。
-                Gradio 连接公开语音服务，不向其发送该令牌。
+                Gradio 连接公开语音服务，
+                不向其发送该令牌。
                 免费远程部署尚需你的可用托管账号及实际验证。
               </p>
             </section>
@@ -994,7 +1180,9 @@ function App() {
                 <input
                   type="checkbox"
                   checked={settings.demo}
-                  onChange={e => setting('demo', e.target.checked)}
+                  onChange={event =>
+                    setting('demo', event.target.checked)
+                  }
                 />
               </label>
 
@@ -1002,16 +1190,17 @@ function App() {
                 翻译服务
                 <select
                   value={settings.translationProvider}
-                  onChange={e =>
+                  onChange={event => {
                     setting(
                       'translationProvider',
-                      e.target.value as 'mymemory' | 'backend'
-                    )
-                  }
+                      event.target.value as 'mymemory' | 'backend'
+                    );
+                  }}
                 >
                   <option value="mymemory">
                     MyMemory 免费联网翻译（默认）
                   </option>
+
                   <option value="backend">
                     自备 FastAPI + Ollama（可选）
                   </option>
@@ -1021,7 +1210,8 @@ function App() {
               <p className="hint">
                 默认服务支持任意文本及六个语言方向，
                 不需要 Python、Ollama 或 API 密钥。
-                长文本按 500 UTF-8 字节分段，可能损失跨段语境；
+                长文本按 500 UTF-8 字节分段，
+                可能损失跨段语境；
                 全部成功才显示完整结果。
                 服务有免费额度，不保证每个词义都正确。
               </p>
@@ -1054,7 +1244,9 @@ function App() {
                 后端地址
                 <input
                   value={settings.api}
-                  onChange={e => setting('api', e.target.value)}
+                  onChange={event =>
+                    setting('api', event.target.value)
+                  }
                   placeholder="/api 或 https://…"
                 />
               </label>
@@ -1065,9 +1257,9 @@ function App() {
                   type="password"
                   autoComplete="off"
                   value={token}
-                  onChange={e => {
+                  onChange={event => {
                     cancel();
-                    setToken(e.target.value);
+                    setToken(event.target.value);
                   }}
                 />
               </label>
@@ -1075,7 +1267,7 @@ function App() {
               <button
                 onClick={async () => {
                   try {
-                    const r = await apiCall(
+                    const response = await apiCall(
                       settings.api,
                       token,
                       '/health',
@@ -1083,9 +1275,9 @@ function App() {
                       AbortSignal.timeout(8000)
                     );
 
-                    setMessage(r.message);
-                  } catch (e) {
-                    setMessage((e as Error).message);
+                    setMessage(response.message);
+                  } catch (error) {
+                    setMessage((error as Error).message);
                   }
                 }}
               >
@@ -1109,27 +1301,30 @@ function App() {
                 选择声音
                 <select
                   value={settings.voice}
-                  onChange={e => setting('voice', e.target.value)}
+                  onChange={event =>
+                    setting('voice', event.target.value)
+                  }
                 >
                   <option value="">
                     自动选择可用本地香港粤语声音
                   </option>
 
                   {voices
-                    .filter(v => matches(v, 'yue'))
-                    .map(v => (
+                    .filter(voice => matches(voice, 'yue'))
+                    .map(voice => (
                       <option
-                        value={v.voiceURI}
-                        key={v.voiceURI}
+                        value={voice.voiceURI}
+                        key={voice.voiceURI}
                       >
-                        {v.name} · {v.lang}
+                        {voice.name} · {voice.lang}
                       </option>
                     ))}
                 </select>
               </label>
 
               <p className="hint">
-                检测到 {voices.filter(v => matches(v, 'yue')).length}
+                检测到{' '}
+                {voices.filter(voice => matches(voice, 'yue')).length}
                 {' '}个本地粤语声音。
                 只接受香港粤语 / yue 及 localService 声音。
                 下载的增强语音未必会向 Safari 开放；
@@ -1148,15 +1343,17 @@ function App() {
                       settings.rate,
                       setMessage
                     );
-                  } catch (e) {
-                    setMessage((e as Error).message);
+                  } catch (error) {
+                    setMessage((error as Error).message);
                   }
                 }}
               >
                 试听粤语
               </button>
 
-              <button onClick={stop}>停止播放</button>
+              <button onClick={stop}>
+                停止播放
+              </button>
             </section>
 
             <section className="card">
@@ -1165,14 +1362,17 @@ function App() {
               {([
                 ['auto', '自动播放译文'],
                 ['jp', '显示粤拼'],
-                ['save', '保存新历史记录']
-              ] as const).map(([k, n]) => (
-                <label className="setting" key={k}>
-                  {n}
+                ['save', '保存新历史记录'],
+              ] as const).map(([key, label]) => (
+                <label className="setting" key={key}>
+                  {label}
+
                   <input
                     type="checkbox"
-                    checked={settings[k]}
-                    onChange={e => setting(k, e.target.checked)}
+                    checked={settings[key]}
+                    onChange={event =>
+                      setting(key, event.target.checked)
+                    }
                   />
                 </label>
               ))}
@@ -1185,8 +1385,8 @@ function App() {
                   max="1.2"
                   step="0.1"
                   value={settings.rate}
-                  onChange={e =>
-                    setting('rate', Number(e.target.value))
+                  onChange={event =>
+                    setting('rate', Number(event.target.value))
                   }
                 />
               </label>
@@ -1209,7 +1409,8 @@ function App() {
                 识别可能使用系统供应商网络服务。
                 Vokawa 不保存麦克风音频、不保存连接令牌。
                 MyMemory 只接收本次文字；
-                选用自备翻译后端时，对话会发送最近六轮上下文。
+                选用自备翻译后端时，
+                对话会发送最近六轮上下文。
               </p>
             </section>
 
@@ -1219,7 +1420,8 @@ function App() {
               <p>
                 已接入标准六调编号的 4296 个原始音节文件；
                 不代表 4296 个常用汉字。
-                你已确认两轮试听共 71 项正确，并接受其作为单字资源。
+                你已确认两轮试听共 71 项正确，
+                并接受其作为单字资源。
                 首次播放需联网，成功缓存的音节可离线重播；
                 浏览器清除缓存后需重新下载。
                 系统可能清除网站数据。
@@ -1228,7 +1430,8 @@ function App() {
               <p>
                 录音无需 Ollama、录音权限或 Chromebook 在线。
                 完整真人词语和 Canto-TTS 样本已接入；
-                任意新词句需要语音服务。
+                工作台内任意新词句的模型合成需要语音服务。
+                翻译界面的整句系统朗读及逐字录音无需该服务。
               </p>
 
               <a href="./audio/ekho/COPYING.txt">
@@ -1240,15 +1443,18 @@ function App() {
               <h3>iPhone 安装</h3>
 
               <p>
-                使用 Safari 打开 HTTPS 地址，分享 → 添加到主屏幕。
+                使用 Safari 打开 HTTPS 地址，
+                分享 → 添加到主屏幕。
               </p>
 
               <p>
                 {offlineReady
                   ? '离线应用缓存已就绪'
                   : '离线缓存尚未就绪（开发模式不会启用）'}
-                。首次联网打开并等待缓存完成后，再测试断网重开。
-                系统可能清除网站数据；历史只保存在当前设备。
+                。首次联网打开并等待缓存完成后，
+                再测试断网重开。
+                系统可能清除网站数据；
+                历史只保存在当前设备。
               </p>
 
               <p>
@@ -1270,6 +1476,7 @@ function App() {
 
       <dialog ref={dialog}>
         <p className="fullscreen">{full}</p>
+
         <button onClick={() => dialog.current?.close()}>
           关闭
         </button>
