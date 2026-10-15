@@ -1,0 +1,89 @@
+.wake-panel {
+  padding: 8px 26px 20px;
+}
+.wake-intro {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 12px 0;
+}
+.wake-intro h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+}
+.wake-orb {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #b9a5ff55;
+  border-radius: 20px;
+  background: radial-gradient(at 0 0, #b9a5ff33, transparent 85%);
+  color: var(--accent);
+}
+.phonetic {
+  font-size: 13px;
+  margin: 0;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.phonetic span {
+  color: var(--accent);
+  padding: 0 5px;
+}
+.wake-steps {
+  display: flex;
+  gap: 22px;
+  padding: 18px 0;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+.wake-steps .current {
+  color: var(--mint);
+}
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  padding: 10px 0 22px;
+}
+.consent input {
+  margin-top: 5px;
+  accent-color: var(--accent);
+}
+.wake-status {
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+.wake-live {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.level {
+  height: 4px;
+  background: var(--line);
+  flex: 1;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.level i {
+  display: block;
+  height: 100%;
+  background: var(--mint);
+  transition: width 0.08s;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 12px #9ce6d655;
+}

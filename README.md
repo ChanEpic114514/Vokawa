@@ -1,52 +1,72 @@
-# Vokawa 0.5 — 即时文字翻译
+# Vokawa 0.6
 
-React + TypeScript + Vite + PWA；保留可选 Python / FastAPI 后端。
+English, Mandarin and Cantonese translation with a bilingual interface, system speech, exact Ekho syllable recordings and an optional local acoustic wake phrase.
 
-**本地运行见 [第 5 版更新、运行与测试教程](docs/V05_UPDATE_TEST_ZH.md)。GitHub Pages 在推送到 main 后自动部署。**
+## Run locally
 
-```bash
+Use Node.js 24 LTS (or a compatible Node.js 22 release), npm and Python 3.
+
+```sh
 npm ci
+npm test
+npm run build
 npm run dev -- --port 5173 --strictPort
 ```
 
-Chrome 打开 http://localhost:5173 。输入自己的字、词、句子，点击翻译。默认 MyMemory 官方公共 API 支持英语、普通话、香港粤语六向互译，无需密钥、Python、Ollama 或本地翻译模型。
+Open http://localhost:5173. The predev/prebuild script restores the included audio archives and verifies their SHA-256. No Ollama installation or Python server is required for the default MyMemory translation and system speech path.
 
-匿名免费额度每天 5000 字符，单请求最多 500 UTF-8 字节；长文本分段，全部成功才显示结果。不是无限、离线、零误译服务。点击后输入发送到供应商，可能被保留或交由合作翻译服务处理，勿发送敏感资料。额度耗尽后停止，不自动付费。
+Read [the Chinese update guide](docs/UPDATE_V06_ZH.md) before replacing an existing checkout. This is a whole-project update, not a replacement for `src/main.tsx` alone.
 
-翻译页、对话及历史记录的播放采用系统声音；香港粤语声音需在当前设备上选择并试听，无需语音后端。粤语朗读工作台保留 Ekho 单字、多音字选择、完整录音及可选 Canto-TTS 路径；该工作台合成任意新词句仍需语音服务，可改点同页的系统试听。
+## Included functionality
 
-| 路径 | 用途 |
-| --- | --- |
-| src/translation.ts | 免费 API、六向映射、分段、错误、取消 |
-| src/main.tsx / model.ts | 界面、任务、历史、设置迁移 |
-| src/pronunciation.ts | 本地粤拼与多音字 |
-| src/ekho.ts / cantonese.ts | 单字与完整词句音频 |
-| audio-assets/ → public/audio/ | 原始录音及授权的无损打包与自动还原 |
-| backend/ / speech-service/ | 可选 FastAPI、Canto 与旧 Ollama 接入 |
-| docs/verification-v0.5/ | 本次真实验证记录 |
+- Redesigned responsive interface: translate, converse, listen, phrasebook and preferences.
+- Persistent Chinese / English interface selection, separate from input/output languages.
+- Arbitrary input, with UTF-8-aware translation chunks, request cancellation and stale-response protection.
+- Hong Kong Cantonese system speech, plus English and Mandarin system speech. No Mandarin fallback for Cantonese.
+- Exact Ekho syllable recordings and selectable readings for polyphonic characters. Choices do not override system speech phonemes.
+- Saved phrases, history, search, copying and expanded text.
+- Opt-in acoustic wake phrase: three enrollment recordings, positive/negative calibration, local matching, and browser dictation after waking.
+- PWA manifest, relative GitHub Pages paths and cached audio on demand.
+- Preserved optional FastAPI translation and speech services, original audio assets and third-party notices.
 
-```bash
-npm test
-npm run build
-# 可选，需下载浏览器，占磁盘空间
+## Privacy and limits
+
+Translation text goes to the selected translation provider. MyMemory has availability and free usage limits; this project does not guarantee translation accuracy or unlimited usage. The optional backend can provide contextual translation; MyMemory processes each request independently.
+
+Wake phrase processing runs on the device. Dictation may send audio to the browser's speech provider. No recording starts automatically. Switching tabs within Vokawa, hiding the document or leaving the page stops recording. Background or lock-screen listening is not supported. Wake samples are stored only in the current browser/site.
+
+The reconstructed wake engine uses profile version 2 and a new storage key. Previous recordings are left untouched, but must be enrolled again for this engine. The requested +0.03 calibration tolerance is retained; calibration refuses to save if this would accept a supplied negative example. Real-world wake accuracy must be evaluated with your voice.
+
+System Cantonese voices depend on the device. Sentence-level pronunciations and prosody remain under the operating system's control. Character recordings are exact clips and have not been replaced.
+
+## Source map
+
+- `src/main.tsx`: React bootstrap.
+- `src/App.tsx`, `src/style.css`, `src/Icon.tsx`: application, layout and icons.
+- `src/i18n.ts`, `src/messages.ts`: interface language and service message localization.
+- `src/translation.ts`, `src/model.ts`: translation requests, data and saved preferences.
+- `src/speech.ts`, `src/cantonese.ts`, `src/ekho.ts`, `src/pronunciation.ts`: playback and pronunciation.
+- `src/WakePanel.tsx`, `src/wake-core.ts`, `src/wake-audio.ts`: wake enrollment, matching and microphone lifecycle.
+- `audio-assets/`: lossless split archive, restored into `public/audio/` automatically.
+- `backend/`, `speech-service/`: preserved optional Python services.
+- `tests/`: unit tests and browser acceptance scenarios.
+- `backups/`: original source backups and superseded browser tests.
+
+## Verification
+
+See [the verification report](docs/V06_VERIFICATION.md) for the checks actually executed. Browser scenarios are included but were not run in the generation environment. To run them locally after building:
+
+```sh
 npx playwright install chromium
 npm run test:e2e
-# 可选，真实联网，会消耗免费额度
-npm run test:live-translation
 ```
 
-标准浏览器回归会模拟翻译接口；真实联网测试单独运行，不在 CI 自动执行。构建和测试不会部署。
+These tests mock translation and speech-service responses. They do not certify real transcription, Cantonese pronunciation or iPhone microphone behavior.
 
-- [MyMemory API](https://mymemory.translated.net/doc/spec.php)
-- [额度](https://mymemory.translated.net/doc/usagelimits.php)
-- [条款及隐私](https://mymemory.translated.net/terms-and-conditions)
+## Deployment
 
-源码 MIT，音频和模型遵守各自授权。见 public/audio/ 和 public/THIRD_PARTY_NOTICES.txt。
+This delivery does not publish anything. The retained GitHub Actions workflows deploy `main` pushes to GitHub Pages when enabled. Finish local testing before pushing. For iPhone installation, open the eventual HTTPS URL in Safari and choose Share → Add to Home Screen.
 
-## GitHub audio packaging
+## Licensing
 
-Original audio and license files are stored losslessly in `audio-assets/*.zip.part` with a SHA-256 manifest. `npm run dev` and `npm run build` restore them to `public/audio` using Python 3 and its standard library. Translation-page system playback needs no model download or speech backend. The Pages workflow publishes on pushes to `main`.
-
-## iPhone PWA testing
-
-Open the published HTTPS address in Safari, use Share → Add to Home Screen, then launch Vokawa from its icon. Select and test the phone’s Hong Kong Cantonese system voice in Settings. Test new translations, playback, favorites and offline access to cached recordings. New translations require internet; the Chromebook can be switched off.
+See `LICENSE`, `public/THIRD_PARTY_NOTICES.txt`, and the license files restored with the audio. Original assets and their attribution are preserved. New source comments are in English; interface text and documentation intentionally include Chinese.
