@@ -33,10 +33,30 @@ describe("acoustic wake matching", () => {
     expect(score(s, [s, s, sequence(300)])).toBe(0);
     expect(score(s, [s])).toBe(Infinity);
   });
-  it("adds the requested tolerance only when known negative phrases remain rejected", () => {
-    expect(calibrate([0.01, 0.02, 0.015], [0.12, 0.13, 0.15])).toBeCloseTo(0.1);
-    expect(() => calibrate([0.01, 0.02, 0.03], [0.04, 0.05, 0.06])).toThrow(
-      "margin",
+  it("retains the full tolerance when the acoustic gap permits it", () => {
+    expect(calibrate([0.01, 0.02, 0.015], [0.2, 0.23, 0.25])).toBeCloseTo(0.14);
+  });
+  it("accepts separable recordings even when the fixed offset exceeds their gap", () => {
+    const positive = [0.01, 0.02, 0.03],
+      negative = [0.04, 0.05, 0.06];
+    const threshold = calibrate(positive, negative);
+    expect(threshold).toBeCloseTo(0.0375);
+    expect(positive.every((value) => value <= threshold)).toBe(true);
+    expect(negative.every((value) => value > threshold)).toBe(true);
+  });
+  it("scales tolerance to small normalized distances without accepting negative examples", () => {
+    for (const scale of [0.0001, 0.001, 0.01, 0.1, 1]) {
+      const positive = [1, 2, 3].map((value) => value * scale),
+        negative = [4, 5, 6].map((value) => value * scale);
+      const threshold = calibrate(positive, negative);
+      expect(threshold).toBeGreaterThan(Math.max(...positive));
+      expect(threshold).toBeLessThan(Math.min(...negative));
+    }
+    expect(() => calibrate([0.01, 0.02, 0.03], [NaN, 0.1, 0.2, 0.3])).toThrow(
+      "samples",
+    );
+    expect(() => calibrate([-0.1, 0.02, 0.03], [0.1, 0.2, 0.3])).toThrow(
+      "samples",
     );
   });
   it("refuses overlapping and insufficient calibration data", () => {

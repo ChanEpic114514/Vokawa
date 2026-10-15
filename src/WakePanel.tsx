@@ -156,7 +156,9 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
         );
     }
   }
+  const [calibrationFailed, setCalibrationFailed] = useState(false);
   function save() {
+    setCalibrationFailed(false);
     try {
       const next: WakeProfile = {
         version: 2,
@@ -174,16 +176,17 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
         ),
       );
     } catch (e) {
+      setCalibrationFailed((e as Error).message === "overlap");
       setStatus(
         (e as Error).message === "samples"
           ? t(
               "请完成三遍咒语、三次确认和三次其他语句。",
               "Record three templates, three matching phrases and three different phrases.",
             )
-          : ["overlap", "margin"].includes((e as Error).message)
+          : (e as Error).message === "overlap"
             ? t(
-                "咒语与其他语句太接近，请在安静环境中重新校准。",
-                "The wake phrase and other phrases sound too similar. Recalibrate in a quiet place.",
+                "当前样本的匹配结果仍有重叠。你说的话可以完全不同，但声学匹配未能区分；可保留模板，仅重新收录确认或对比语句。",
+                "The recorded samples still overlap in acoustic matching, even if their words differ. Keep your templates and rerecord the matching or different phrases.",
               )
             : t(
                 "本机无法保存，请检查浏览器存储空间。",
@@ -404,10 +407,37 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                 {t("保存咒语", "Save wake phrase")}
               </button>
             )}
+            {calibrationFailed && (
+              <>
+                <button
+                  disabled={active}
+                  onClick={() => {
+                    setPositive([]);
+                    setMode("positive");
+                    setCalibrationFailed(false);
+                    setStatus("");
+                  }}
+                >
+                  {t("重录咒语确认", "Rerecord matching phrases")}
+                </button>
+                <button
+                  disabled={active}
+                  onClick={() => {
+                    setNegative([]);
+                    setMode("negative");
+                    setCalibrationFailed(false);
+                    setStatus("");
+                  }}
+                >
+                  {t("重录对比语句", "Rerecord different phrases")}
+                </button>
+              </>
+            )}
             <button
               className="quiet"
               disabled={active}
               onClick={() => {
+                setCalibrationFailed(false);
                 setTemplates([]);
                 setPositive([]);
                 setNegative([]);
@@ -472,6 +502,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                 )
                   return;
                 setProfile(null);
+                setCalibrationFailed(false);
                 setTemplates([]);
                 setPositive([]);
                 setNegative([]);

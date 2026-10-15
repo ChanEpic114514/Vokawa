@@ -54,14 +54,19 @@ export function calibrate(positive: number[], negative: number[]) {
   if (
     positive.length < 3 ||
     negative.filter(Number.isFinite).length < 3 ||
-    !positive.every(Number.isFinite)
+    !positive.every((value) => Number.isFinite(value) && value >= 0) ||
+    !negative.every((value) => value >= 0)
   )
     throw Error("samples");
   const high = Math.max(...positive),
     low = Math.min(...negative);
   if (high >= low) throw Error("overlap");
-  const threshold = (high + low) / 2 + 0.03;
-  if (threshold >= low) throw Error("margin");
+  // Distances are normalized; an absolute offset can exceed the entire gap.
+  // Retain extra tolerance while keeping every supplied negative rejected.
+  const gap = low - high;
+  const tolerance = Math.min(0.03, gap / 4);
+  const threshold = high + gap / 2 + tolerance;
+  if (!(threshold > high && threshold < low)) throw Error("overlap");
   return threshold;
 }
 export function parseProfile(raw: string | null): WakeProfile | null {

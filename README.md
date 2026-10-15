@@ -35,7 +35,7 @@ Translation text goes to the selected translation provider. MyMemory has availab
 
 Wake phrase processing runs on the device. Dictation may send audio to the browser's speech provider. No recording starts automatically. Switching tabs within Vokawa, hiding the document or leaving the page stops recording. Background or lock-screen listening is not supported. Wake samples are stored only in the current browser/site.
 
-The reconstructed wake engine uses profile version 2 and a new storage key. Previous recordings are left untouched, but must be enrolled again for this engine. The requested +0.03 calibration tolerance is retained; calibration refuses to save if this would accept a supplied negative example. Real-world wake accuracy must be evaluated with your voice.
+The reconstructed wake engine uses profile version 2 and a new storage key. Previous recordings are left untouched, but must be enrolled again for this engine. The extra calibration tolerance is capped at +0.03 and scales down to one quarter of the observed positive/negative gap when needed. Separable samples are accepted without crossing the nearest negative example. Truly overlapping samples still require rerecording. Real-world wake accuracy must be evaluated with your voice.
 
 System Cantonese voices depend on the device. Sentence-level pronunciations and prosody remain under the operating system's control. Character recordings are exact clips and have not been replaced.
 
