@@ -145,7 +145,7 @@ test("opening the wake phrase panel never starts the microphone", async ({
       throw new Error("unexpected");
     };
   });
-  await page.getByText("Wake phrase", { exact: true }).click();
+  await page.getByText("Continuous listening", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: /Record a take/ }),
   ).toBeVisible();
@@ -200,12 +200,12 @@ test("uses a stacked phone layout and a two-column desktop layout without overfl
   expect(Math.abs(desktopOutput!.y - desktopInput!.y)).toBeLessThan(2);
 });
 
-test("aurora follows actual recognition activity, errors and explicit stop", async ({ page }) => {
+test("aurora follows recognition activity and survives an unavailable optional level meter", async ({ page }) => {
   await page.evaluate(() => {
     (window as any).__audioRequests = 0;
     navigator.mediaDevices.getUserMedia = async () => {
       (window as any).__audioRequests++;
-      throw Error("The indicator must not open a second microphone stream");
+      throw Error("Optional local level monitoring is unavailable in this test");
     };
     (window as any).SpeechRecognition = class {
       onstart: any;
@@ -228,7 +228,7 @@ test("aurora follows actual recognition activity, errors and explicit stop", asy
   await expect(aurora).toBeVisible();
   await page.evaluate(() => (window as any).__recognizer.onerror({ error: "network" }));
   await expect(aurora).toHaveCount(0);
-  expect(await page.evaluate(() => (window as any).__audioRequests)).toBe(0);
+  expect(await page.evaluate(() => (window as any).__audioRequests)).toBe(2);
 });
 
 test("phone aurora respects reduced motion and stops when changing screens", async ({ page }) => {

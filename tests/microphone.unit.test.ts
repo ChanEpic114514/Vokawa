@@ -72,11 +72,11 @@ describe("speech recognition lifecycle", () => {
     mic.start("en", vi.fn(), vi.fn(), error);
     Fake.all[0].onstart?.();
     Fake.all[0].onend?.();
-    expect(error).toHaveBeenCalledWith(recognitionError("no-result"));
+    expect(error).toHaveBeenCalledWith(recognitionError("no-result"), "no-result");
     mic.start("en", vi.fn(), vi.fn(), error);
     Fake.all[1].onstart?.();
     vi.advanceTimersByTime(30000);
-    expect(error).toHaveBeenLastCalledWith(recognitionError("timeout"));
+    expect(error).toHaveBeenLastCalledWith(recognitionError("timeout"), "timeout");
   });
   it("waits for consent and returns localized actionable failures", () => {
     vi.stubGlobal("window", { SpeechRecognition: Fake, confirm: () => false });

@@ -64,6 +64,22 @@ describe("local voice selection", () => {
     spoken[1].onend();
     expect(spoken).toHaveLength(2);
   });
+  it("settles playback completion exactly once on end or cancellation", () => {
+    const spoken: any[] = [];
+    vi.stubGlobal("window", { speechSynthesis: {
+      getVoices: () => [{ lang: "zh-HK", localService: true, voiceURI: "hk", name: "HK" }],
+      cancel: vi.fn(), speak: (u: unknown) => spoken.push(u),
+    } });
+    vi.stubGlobal("SpeechSynthesisUtterance", class { constructor(public text: string) {} });
+    vi.useFakeTimers();
+    const speaker = new Speaker(), done = vi.fn();
+    speaker.speak("你好。", "yue", "hk", 1, vi.fn(), done);
+    spoken[0].onend(); speaker.stop();
+    expect(done).toHaveBeenCalledOnce();
+    speaker.speak("再見。", "yue", "hk", 1, vi.fn(), done);
+    speaker.stop(); spoken[1].onend();
+    expect(done).toHaveBeenCalledTimes(2);
+  });
   it("fails without any Cantonese voice rather than choosing a default Mandarin voice", () => {
     const speak = vi.fn();
     vi.stubGlobal("window", {

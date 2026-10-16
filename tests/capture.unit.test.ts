@@ -42,13 +42,15 @@ describe("capture indicator lifecycle", () => {
     const track = { stop: vi.fn(), onended: null as (() => void) | null };
     const stream = { getTracks: () => [track] };
     const getUserMedia = vi.fn().mockResolvedValue(stream);
+    const contexts: Context[] = [];
     class Context {
+      constructor() { contexts.push(this); }
       resume = vi.fn().mockResolvedValue(undefined);
       close = vi.fn().mockResolvedValue(undefined);
       audioWorklet = { addModule: vi.fn().mockResolvedValue(undefined) };
       destination = {};
       createMediaStreamSource = () => ({ connect: vi.fn(), disconnect: vi.fn() });
-      createGain = () => ({ gain: { value: 1 }, connect: vi.fn() });
+      createGain = () => ({ gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() });
     }
     class Node {
       port = { onmessage: null };
@@ -59,7 +61,7 @@ describe("capture indicator lifecycle", () => {
     vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
     vi.stubGlobal("AudioContext", Context);
     vi.stubGlobal("AudioWorkletNode", Node);
-    return { track, stream, getUserMedia };
+    return { track, stream, getUserMedia, contexts };
   }
   it("shows wake capture only after initialization and clears it on disconnection", async () => {
     const { track } = setupWake(), wake = new WakeAudio(), failure = vi.fn();
@@ -71,6 +73,19 @@ describe("capture indicator lifecycle", () => {
       expect(track.stop).toHaveBeenCalledOnce();
       expect(failure).toHaveBeenCalledOnce();
     } finally { wake.stop(); }
+  });
+  it("reuses the initialized audio context across foreground rounds, then closes on stop", async () => {
+    const { contexts, track } = setupWake(), wake = new WakeAudio();
+    await wake.start(vi.fn(), vi.fn());
+    wake.pause();
+    expect(track.stop).toHaveBeenCalledOnce();
+    expect(contexts[0].close).not.toHaveBeenCalled();
+    await wake.start(vi.fn(), vi.fn());
+    expect(contexts).toHaveLength(1);
+    expect(contexts[0].audioWorklet.addModule).toHaveBeenCalledOnce();
+    wake.stop();
+    expect(contexts[0].close).toHaveBeenCalledOnce();
+    expect(getCaptureActive()).toBe(false);
   });
   it("never lights up when microphone permission is rejected", async () => {
     const { getUserMedia } = setupWake(), wake = new WakeAudio();
