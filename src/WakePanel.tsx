@@ -8,7 +8,10 @@ import {
 } from "react";
 import { t, useLocale } from "./i18n";
 import { Icon } from "./Icon";
-import { Microphone } from "./microphone";
+import {
+  ContinuousWake,
+  type ListeningPhase,
+} from "./continuous-wake";
 import { WakeAudio } from "./wake-audio";
 import {
   WAKE_KEY,
@@ -21,21 +24,26 @@ import {
 } from "./wake-core";
 import type { Lang } from "./model";
 import "./wake.css";
+
 export interface WakeHandle {
   stop(): void;
 }
+
 type Props = {
   lang: Lang;
   disabled: boolean;
   onPrepare: () => void;
-  onText: (value: string) => void;
+  onText: (value: string, signal: AbortSignal) => Promise<void>;
 };
+
 type Mode = "templates" | "positive" | "negative";
+
 export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
   { lang, disabled, onPrepare, onText },
   ref,
 ) {
   const locale = useLocale();
+
   const [profile, setProfile] = useState<WakeProfile | null>(() => {
     try {
       return parseProfile(localStorage.getItem(WAKE_KEY));
@@ -43,93 +51,132 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
       return null;
     }
   });
+
   const [templates, setTemplates] = useState<Sequence[]>([]);
-  const [positive, setPositive] = useState<number[]>([]),
-    [negative, setNegative] = useState<number[]>([]);
+  const [positive, setPositive] = useState<number[]>([]);
+  const [negative, setNegative] = useState<number[]>([]);
   const [mode, setMode] = useState<Mode>("templates");
-  const [phase, setPhase] = useState<
-    "off" | "sample" | "starting" | "waiting" | "handoff" | "dictation"
-  >("off");
-  const [status, setStatus] = useState(""),
-    [consent, setConsent] = useState(false),
-    [retry, setRetry] = useState(false),
-    [level, setLevel] = useState(0);
-  const audio = useRef(new WakeAudio()),
-    mic = useRef(new Microphone()),
-    generation = useRef(0);
-  const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [phase, setPhase] =
+    useState<ListeningPhase | "sample">("off");
+
+  const [status, setStatus] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [retry, setRetry] = useState(false);
+  const [level, setLevel] = useState(0);
+  const [calibrationFailed, setCalibrationFailed] = useState(false);
+
+  const audio = useRef(new WakeAudio());
+  const loop = useRef(new ContinuousWake());
+  const generation = useRef(0);
+  const timeout =
+    useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const beep = useRef<AudioContext | null>(null);
+  const latestOnText = useRef(onText);
+
+  useEffect(() => {
+    latestOnText.current = onText;
+  }, [onText]);
+
   function stop() {
     generation.current++;
     clearTimeout(timeout.current);
+
     audio.current.stop();
-    mic.current.stop();
+    loop.current.stop();
+
     setPhase("off");
     setLevel(0);
+
     void beep.current?.close().catch(() => {});
     beep.current = null;
   }
+
   useImperativeHandle(ref, () => ({ stop }));
+
   useEffect(() => {
     stop();
     setStatus("");
     setConsent(false);
     setRetry(false);
   }, [lang, locale]);
+
   useEffect(() => {
-    if (disabled) stop();
+    if (disabled && !loop.current.translating) stop();
   }, [disabled]);
+
   useEffect(() => {
-    const hide = () => {
-      if (document.hidden) stop();
+    const leave = () => {
+      stop();
+      setStatus(
+        t(
+          "监听已停止，返回前台后请重新开启。",
+          "Listening stopped. Enable it again when you return.",
+        ),
+      );
     };
-    const leave = () => stop();
+
+    const hide = () => {
+      if (document.hidden) leave();
+    };
+
     document.addEventListener("visibilitychange", hide);
     window.addEventListener("pagehide", leave);
+
     return () => {
       stop();
       document.removeEventListener("visibilitychange", hide);
       window.removeEventListener("pagehide", leave);
     };
   }, []);
+
   function error(message: string) {
     stop();
     setStatus(message);
   }
+
   async function capture(kind: Mode) {
     stop();
     onPrepare();
     setRetry(false);
     setPhase("starting");
-    const id = generation.current,
-      capture = new UtteranceCapture();
+
+    const id = generation.current;
+    const capture = new UtteranceCapture();
     let taken = false;
+
     setStatus(
       t(
         "请先安静一秒，然后说一句，结束后停顿。",
         "Stay quiet for one second, then say one phrase and pause.",
       ),
     );
+
     timeout.current = setTimeout(() => {
-      if (id === generation.current)
+      if (id === generation.current) {
         error(
           t(
             "未能收录完整语音，请重试。",
             "No complete phrase was captured. Please try again.",
           ),
         );
+      }
     }, 20000);
+
     try {
       await audio.current.start((frame) => {
         if (id !== generation.current || taken) return;
+
         setLevel(Math.min(1, frame.rms * 10));
+
         const sequence = capture.push(frame);
         if (!sequence) return;
         taken = true;
-        if (kind === "templates")
+
+        if (kind === "templates") {
           setTemplates((values) => [...values, sequence].slice(0, 5));
-        else {
+        } else {
           const value = score(sequence, templates);
+
           if (!Number.isFinite(value)) {
             error(
               t(
@@ -139,27 +186,32 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
             );
             return;
           }
+
           (kind === "positive" ? setPositive : setNegative)((values) =>
             [...values, value].slice(-30),
           );
         }
+
         stop();
         setStatus(t("已收录。", "Phrase captured."));
       }, error);
+
       if (id === generation.current) setPhase("sample");
     } catch {
-      if (id === generation.current)
+      if (id === generation.current) {
         error(
           t(
             "无法开启麦克风，请检查权限与浏览器支持。",
             "Could not open the microphone. Check permission and browser support.",
           ),
         );
+      }
     }
   }
-  const [calibrationFailed, setCalibrationFailed] = useState(false);
+
   function save() {
     setCalibrationFailed(false);
+
     try {
       const next: WakeProfile = {
         version: 2,
@@ -167,9 +219,14 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
         templates,
         threshold: calibrate(positive, negative),
       };
-      if (!parseProfile(JSON.stringify(next))) throw Error("samples");
+
+      if (!parseProfile(JSON.stringify(next))) {
+        throw Error("samples");
+      }
+
       localStorage.setItem(WAKE_KEY, JSON.stringify(next));
       setProfile(next);
+
       setStatus(
         t(
           "咒语已保存，下次无需重新录制。",
@@ -178,6 +235,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
       );
     } catch (e) {
       setCalibrationFailed((e as Error).message === "overlap");
+
       setStatus(
         (e as Error).message === "samples"
           ? t(
@@ -196,136 +254,77 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
       );
     }
   }
-  function beginDictation(saved: WakeProfile) {
-    const id = generation.current;
-    setPhase("dictation");
-    let failed = false,
-      received = false;
-    try {
-      mic.current.start(
-        lang,
-        (text) => {
-          if (id === generation.current) {
-            received = true;
-            onText(text);
-          }
-        },
-        (active) => {
-          if (!active && id === generation.current && !failed && received) {
-            setStatus(
-              t("已填写文字，可点击翻译。", "Text is ready. Tap Translate."),
-            );
-            timeout.current = setTimeout(() => {
-              if (id === generation.current) void listen(saved);
-            }, 700);
-          }
-        },
-        (message) => {
-          failed = true;
-          error(message);
-          setRetry(true);
-        },
-        {
-          sessionConsent: true,
-          onReady: () =>
-            setStatus(
-              t(
-                "请说待翻译内容，最长 30 秒。",
-                "Say what you want to translate, up to 30 seconds.",
-              ),
-            ),
-        },
-      );
-    } catch (e) {
-      error((e as Error).message);
-      setRetry(true);
-    }
-  }
-  async function listen(saved: WakeProfile) {
-    audio.current.stop();
-    mic.current.stop();
-    clearTimeout(timeout.current);
-    const id = ++generation.current;
-    setPhase("starting");
-    setRetry(false);
-    setStatus(t("正在开启麦克风…", "Opening microphone…"));
-    const capture = new UtteranceCapture();
-    let matched = false;
-    timeout.current = setTimeout(() => {
-      if (id === generation.current)
-        error(
-          t(
-            "麦克风未能启动，请检查权限。",
-            "The microphone did not start. Check its permission.",
-          ),
-        );
-    }, 15000);
-    try {
-      await audio.current.start((frame) => {
-        if (id !== generation.current || matched) return;
-        setLevel(Math.min(1, frame.rms * 10));
-        const sequence = capture.push(frame);
-        if (!sequence) return;
-        if (score(sequence, saved.templates) <= saved.threshold) {
-          matched = true;
-          audio.current.stop();
-          setLevel(0);
-          setPhase("handoff");
-          setStatus(
-            t("已唤醒，正在准备语音输入…", "Awake. Preparing speech input…"),
-          );
-          const context = beep.current;
-          if (context?.state === "running") {
-            const oscillator = context.createOscillator(),
-              gain = context.createGain();
-            oscillator.frequency.value = 740;
-            gain.gain.value = 0.08;
-            oscillator.connect(gain);
-            gain.connect(context.destination);
-            oscillator.start();
-            oscillator.stop(context.currentTime + 0.12);
-          }
-          timeout.current = setTimeout(() => {
-            if (id === generation.current) beginDictation(saved);
-          }, 350);
-        }
-      }, error);
-      if (id === generation.current) {
-        clearTimeout(timeout.current);
-        setPhase("waiting");
-        setStatus(
-          t(
-            "正在聆听咒语。请保持页面打开。",
-            "Listening for your wake phrase. Keep this page open.",
-          ),
-        );
-      }
-    } catch {
-      if (id === generation.current)
-        error(
-          t(
-            "无法开启麦克风，请检查浏览器权限。",
-            "Could not open the microphone. Check browser permission.",
-          ),
-        );
-    }
-  }
+
   function enable() {
-    if (!profile || !consent) return;
+    if (!profile || !consent || disabled || document.hidden) return;
+
     stop();
     onPrepare();
+    setRetry(false);
+
     try {
       beep.current = new AudioContext();
       void beep.current.resume().catch(() => {});
     } catch {
       /* A visual status is always available. */
     }
-    void listen(profile);
+
+    loop.current.start({
+      profile,
+      lang,
+      onText: (text, signal) => latestOnText.current(text, signal),
+
+      onPhase: (next) => {
+        setPhase(next);
+
+        if (next === "off") {
+          void beep.current?.close().catch(() => {});
+          beep.current = null;
+          setRetry(true);
+        }
+      },
+
+      onStatus: setStatus,
+      onLevel: setLevel,
+
+      onWake: () => {
+        const context = beep.current;
+        if (context?.state !== "running") return;
+
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.frequency.value = 740;
+        gain.gain.value = 0.08;
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.12);
+      },
+    });
   }
+
   const active = phase !== "off";
+
   return (
     <div className="wake-panel">
-      <p className="muted">Vokawa {RELEASE} · <a href={`${import.meta.env.BASE_URL}api/update.html`} onClick={stop}>{t("检查更新", "Check for updates")}</a></p>
+      <p className="muted">
+        Vokawa {RELEASE} ·{" "}
+        <a
+          href={`${import.meta.env.BASE_URL}api/update.html`}
+          onClick={stop}
+        >
+          {t("检查更新", "Check for updates")}
+        </a>
+      </p>
+
       <div className="wake-intro">
         <div className="wake-orb" aria-hidden="true">
           <Icon name="magic" size={28} />
@@ -337,12 +336,14 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
           </p>
         </div>
       </div>
+
       <p className="muted">
         {t(
-          "咒语在本机识别。只在你开启后聆听，离开页面即停止。",
-          "The wake phrase is matched on this device. Listening starts only when enabled and stops when you leave the page.",
+          "开启后持续在本机检测咒语，唤醒后转写并自动翻译，完成后继续等待。切换后台或锁屏会停止。",
+          "Once enabled, Vokawa listens locally for your wake phrase, transcribes and translates, then listens again. Switching to the background or locking the screen stops the session.",
         )}
       </p>
+
       {!profile ? (
         <>
           <div className="wake-steps">
@@ -356,6 +357,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
               03 {t("区分", "Distinguish")}
             </span>
           </div>
+
           <p>
             {mode === "templates"
               ? t(
@@ -372,6 +374,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                     "Record three different phrases of similar length, such as everyday speech. Do not say the wake phrase.",
                   )}
           </p>
+
           <div className="action-row">
             <button
               disabled={
@@ -392,36 +395,76 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                 /3
               </span>
             </button>
+
             {mode === "templates" && templates.length >= 3 && (
-              <button disabled={active} onClick={() => setMode("positive")}>
+              <button
+                disabled={active}
+                onClick={() => setMode("positive")}
+              >
                 {t("下一步", "Next")}
                 <Icon name="arrow" />
               </button>
             )}
+
             {mode === "positive" && positive.length >= 3 && (
-              <button disabled={active} onClick={() => setMode("negative")}>
+              <button
+                disabled={active}
+                onClick={() => setMode("negative")}
+              >
                 {t("下一步", "Next")}
                 <Icon name="arrow" />
               </button>
             )}
+
             {mode === "negative" && negative.length >= 3 && (
-              <button className="primary" disabled={active} onClick={save}>
+              <button
+                className="primary"
+                disabled={active}
+                onClick={save}
+              >
                 {t("保存咒语", "Save wake phrase")}
               </button>
             )}
+
             {calibrationFailed && (
               <>
                 <details>
-                  <summary>{t("校准详情（可复制反馈）", "Calibration details (copy for support)")}</summary>
-                  <p>{t("距离越小表示声学匹配越接近；这里不判断句子意思。", "Smaller distances indicate a closer acoustic match; this does not compare meaning.")}</p>
-                  <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{JSON.stringify({
-                    version: RELEASE,
-                    matching: positive.map(value => Number.isFinite(value) ? value : "unmatched"),
-                    different: negative.map(value => Number.isFinite(value) ? value : "unmatched"),
-                    maxMatching: Math.max(...positive),
-                    minDifferent: Math.min(...negative),
-                  }, null, 2)}</pre>
+                  <summary>
+                    {t(
+                      "校准详情（可复制反馈）",
+                      "Calibration details (copy for support)",
+                    )}
+                  </summary>
+                  <p>
+                    {t(
+                      "距离越小表示声学匹配越接近；这里不判断句子意思。",
+                      "Smaller distances indicate a closer acoustic match; this does not compare meaning.",
+                    )}
+                  </p>
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {JSON.stringify(
+                      {
+                        version: RELEASE,
+                        matching: positive.map((value) =>
+                          Number.isFinite(value) ? value : "unmatched",
+                        ),
+                        different: negative.map((value) =>
+                          Number.isFinite(value) ? value : "unmatched",
+                        ),
+                        maxMatching: Math.max(...positive),
+                        minDifferent: Math.min(...negative),
+                      },
+                      null,
+                      2,
+                    )}
+                  </pre>
                 </details>
+
                 <button
                   disabled={active}
                   onClick={() => {
@@ -433,6 +476,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                 >
                   {t("重录咒语确认", "Rerecord matching phrases")}
                 </button>
+
                 <button
                   disabled={active}
                   onClick={() => {
@@ -446,6 +490,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                 </button>
               </>
             )}
+
             <button
               className="quiet"
               disabled={active}
@@ -473,11 +518,12 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
             />
             <span>
               {t(
-                "允许本次唤醒后使用语音输入。转写音频可能发送给浏览器供应商。",
-                "Allow speech input after waking in this session. Transcription audio may be sent to your browser provider.",
+                "允许本次前台会话持续检测咒语，并在每次唤醒后转写和翻译。转写音频可能发送给浏览器供应商，文字会发送给所选翻译服务。",
+                "Allow wake listening and automatic transcription and translation throughout this foreground session. Transcription audio may go to your browser provider; text goes to the selected translation service.",
               )}
             </span>
           </label>
+
           <div className="action-row">
             <button
               className="primary"
@@ -485,22 +531,19 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
               onClick={enable}
             >
               <Icon name="magic" />
-              {t("开启咒语唤醒", "Enable wake phrase")}
+              {t("开启持续监听", "Start continuous listening")}
             </button>
+
             {retry && (
               <button
                 disabled={active || !consent || disabled}
-                onClick={() => {
-                  stop();
-                  onPrepare();
-                  setRetry(false);
-                  beginDictation(profile);
-                }}
+                onClick={enable}
               >
                 <Icon name="mic" />
-                {t("重试语音输入", "Retry speech input")}
+                {t("重新开启监听", "Restart listening")}
               </button>
             )}
+
             <button
               className="quiet"
               disabled={active}
@@ -512,8 +555,10 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
                       "Record again? The saved phrase stays available until you save its replacement.",
                     ),
                   )
-                )
+                ) {
                   return;
+                }
+
                 setProfile(null);
                 setCalibrationFailed(false);
                 setTemplates([]);
@@ -528,6 +573,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
           </div>
         </>
       )}
+
       {active && (
         <div className="wake-live">
           <span className="live-dot" />
@@ -545,6 +591,7 @@ export const WakePanel = forwardRef<WakeHandle, Props>(function WakePanel(
           </button>
         </div>
       )}
+
       <p role="status" className="wake-status">
         {status}
       </p>

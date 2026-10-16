@@ -261,7 +261,7 @@ export class Microphone {
     lang: Lang,
     onText: (text: string) => void,
     onStatus: (value: boolean) => void,
-    onError: (message: string) => void,
+    onError: (message: string, code?: string) => void,
     options: {
       sessionConsent?: boolean;
       onReady?: () => void;
@@ -312,7 +312,7 @@ export class Microphone {
     const fail = (code: string) => {
       if (this.active !== rec) return;
 
-      onError(recognitionError(code));
+      onError(recognitionError(code), code);
       this.stop();
     };
 
