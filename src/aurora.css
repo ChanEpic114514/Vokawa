@@ -1,49 +1,134 @@
-/* Motion indicates capture activity, not microphone amplitude or recognition progress. */
+
+/* Vokawa — Sound-responsive aurora */
+
 .capture-aurora {
   position: relative;
   isolation: isolate;
+
   min-height: 92px;
   margin: -6px 0 22px;
-  border-block: 1px solid #ffffff09;
+
   overflow: hidden;
   border-radius: 12px;
-  background: linear-gradient(90deg, #9385b503, #b18caa07, #c29d8903);
+
+  border: 1px solid rgba(190, 161, 211, 0.09);
+
+  background:
+    radial-gradient(
+      ellipse at 38% 30%,
+      rgba(154, 125, 191, 0.11),
+      transparent 65%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(175, 156, 216, 0.035),
+      rgba(203, 165, 191, 0.065),
+      rgba(224, 181, 140, 0.035)
+    );
 }
-.aurora-art { position: absolute; inset: 0; pointer-events: none; }
-.aurora-art svg { width: 100%; height: 72px; display: block; }
-.aurora-halo { stroke-width: 13; opacity: .19; filter: blur(9px); }
-.aurora-thread { stroke-width: 1.6; opacity: .8; }
-.aurora-echo { stroke-width: 1; opacity: .42; }
-.aurora-thread, .aurora-halo {
-  transform-origin: center;
-  animation: aurora-breathe 5.5s ease-in-out infinite alternate;
+
+/* Aurora visual container */
+
+.aurora-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
-.aurora-echo { transform-origin: center; animation: aurora-breathe 7s ease-in-out infinite alternate-reverse; }
-@keyframes aurora-breathe {
-  from { transform: translateY(-5px) scaleY(.7); }
-  to { transform: translateY(5px) scaleY(1.15); }
+
+.aurora-art svg {
+  display: block;
+
+  width: 100%;
+  height: 72px;
+
+  overflow: visible;
 }
+
+/* Atmospheric glow */
+
+.aurora-halo {
+  stroke-width: 13;
+  opacity: 0.31;
+
+  filter: blur(7px);
+}
+
+/* Primary luminous ribbon */
+
+.aurora-thread {
+  stroke-width: 1.9;
+  opacity: 0.94;
+}
+
+/* Secondary subtle wave */
+
+.aurora-echo {
+  stroke-width: 1.1;
+  opacity: 0.46;
+}
+
+/* Recording controls */
+
 .capture-controls {
   position: relative;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 12px;
+
   padding: 47px 14px 7px;
 }
+
 .capture-controls > span {
   display: inline-flex;
   align-items: center;
+
   gap: 8px;
-  color: #c1b9c9;
+
+  color: #d0c3d5;
   font-size: 12px;
 }
-.capture-controls > span i { width: 5px; height: 5px; border-radius: 50%; background: #b29bbd; }
-.capture-controls button { min-height: 36px; padding: 7px 12px; font-size: 12px; background: #17181de6; }
-@media (max-width: 540px) {
-  .capture-aurora { margin-bottom: 16px; }
-  .capture-controls button { min-height: 44px; }
+
+.capture-controls > span i {
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #c5aed8;
+
+  box-shadow:
+    0 0 8px rgba(197, 174, 216, 0.4);
 }
+
+.capture-controls button {
+  min-height: 36px;
+
+  padding: 7px 12px;
+  font-size: 12px;
+
+  background: #17181de6;
+}
+
+/* Mobile adaptation */
+
+@media (max-width: 540px) {
+  .capture-aurora {
+    margin-bottom: 16px;
+  }
+
+  .capture-controls button {
+    min-height: 44px;
+  }
+}
+
+/* Accessibility */
+
 @media (prefers-reduced-motion: reduce) {
-  .capture-aurora * { animation: none !important; }
+  .capture-aurora * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
