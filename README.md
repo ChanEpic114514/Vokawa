@@ -70,3 +70,9 @@ This delivery does not publish anything. The retained GitHub Actions workflows d
 ## Licensing
 
 See `LICENSE`, `public/THIRD_PARTY_NOTICES.txt`, and the license files restored with the audio. Original assets and their attribution are preserved. New source comments are in English; interface text and documentation intentionally include Chinese.
+
+## HK Native Engine (0.8)
+
+Cantonese translation results now pass through a local Hong Kong traditional/colloquial processor. Both translation screens and automatic wake translation use the same path. Mixed Cantonese/English playback selects local voices for each language; it never substitutes Mandarin for missing Cantonese.
+
+The engine uses bounded phrase rules, not a local language model. Unsupported sentences retain the provider wording. The authored lexicon still needs native-speaker sign-off; automated tests do not certify fluency. See [implementation, test scope and limitations](docs/HK_NATIVE_ENGINE.md) and [actual API evidence](docs/hk-live-results.json).

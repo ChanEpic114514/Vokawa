@@ -17,6 +17,7 @@ import { CantonesePlayer, selectedReadings } from "./cantonese";
 import { Microphone } from "./microphone";
 import { pronunciation, jyutping } from "./pronunciation";
 import { onlineTranslate } from "./translation";
+import { nativeTranslation } from "./hk-native";
 import { WakePanel, type WakeHandle } from "./WakePanel";
 
 export type Tab = "translate" | "chat" | "sound" | "book" | "settings";
@@ -497,13 +498,15 @@ export default function App({
         );
       }
 
+      const localized = nativeTranslation(data, snapshot, to);
       const entry: Entry = {
         id: crypto.randomUUID(),
         source: from,
         target: to,
         sourceText: snapshot,
-        targetText: data.translation,
-        engine: data.engine || settings.translationProvider,
+        targetText: localized.translation,
+        engine: localized.engine || settings.translationProvider,
+        notice: localized.notice,
         favorite: false,
       };
 

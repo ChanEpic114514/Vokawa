@@ -249,3 +249,48 @@ test("phone aurora respects reduced motion and stops when changing screens", asy
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.locator(".capture-aurora")).toHaveCount(0);
 });
+test("localizes a provider result and saves it without rewriting existing user history", async ({ page }) => {
+  const old = { id: "pre-hk", source: "en", target: "yue", sourceText: "Old input", targetText: "舊的歷史譯文", engine: "old", favorite: true };
+  await page.evaluate(entry => {
+    const saved = JSON.parse(localStorage.getItem("vokawa-v2") || "{}");
+    localStorage.setItem("vokawa-v2", JSON.stringify({ ...saved, history: [entry] }));
+  }, old);
+  await page.reload();
+  await page.route("https://api.mymemory.translated.net/get?**", route => route.fulfill({ json: {
+    responseStatus: 200, responseData: { translatedText: "我今天有会议。" },
+  } }));
+  await page.getByLabel("Text to translate", { exact: true }).fill("I have a meeting today.");
+  await page.getByRole("button", { name: "Translate", exact: true }).last().click();
+  await expect(page.locator(".translation-text")).toHaveText("我今日有 meeting。");
+  const history = await page.evaluate(() => JSON.parse(localStorage.getItem("vokawa-v2") || "{}").history);
+  expect(history.find((e: any) => e.id === "pre-hk")).toEqual(old);
+  expect(history[0].engine).toContain("HK Native");
+  expect(history[0].targetText).toBe("我今日有 meeting。");
+});
+test("the translation Listen button plays HK and English runs in order", async ({ page }) => {
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__spoken = [];
+    w.SpeechSynthesisUtterance = class { constructor(public text: string) {} };
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: {
+      getVoices: () => [
+        { lang: "zh-CN", localService: true, voiceURI: "zh", name: "Mandarin" },
+        { lang: "zh-HK", localService: true, voiceURI: "hk", name: "HK" },
+        { lang: "en-GB", localService: true, voiceURI: "en", name: "English" },
+      ],
+      cancel() {}, addEventListener() {}, removeEventListener() {},
+      speak(u: any) { w.__spoken.push({ text: u.text, lang: u.voice.lang }); setTimeout(() => u.onend?.(), 10); },
+    } });
+  });
+  await page.route("https://api.mymemory.translated.net/get?**", route => route.fulfill({ json: {
+    responseStatus: 200, responseData: { translatedText: "我用社交媒體。" },
+  } }));
+  await page.getByLabel("Text to translate", { exact: true }).fill("I use social media.");
+  await page.getByRole("button", { name: "Translate", exact: true }).last().click();
+  await expect(page.locator(".translation-text")).toHaveText("我用 social media。");
+  await page.locator(".result-actions .listen-button").click();
+  await expect.poll(() => page.evaluate(() => (window as any).__spoken.length)).toBe(2);
+  expect(await page.evaluate(() => (window as any).__spoken)).toEqual([
+    { text: "我用 ", lang: "zh-HK" }, { text: "social media。", lang: "en-GB" },
+  ]);
+});

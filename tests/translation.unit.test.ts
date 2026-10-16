@@ -178,3 +178,13 @@ it("disables obsolete demo preference", () => {
   });
   expect(loadSaved().settings.demo).toBe(false);
 });
+it.each([
+  ["en", "yue", "en-GB|yue-HK"], ["zh", "yue", "zh-CN|yue-HK"],
+  ["yue", "en", "yue-HK|en-GB"], ["yue", "zh", "yue-HK|zh-CN"],
+  ["en", "zh", "en-GB|zh-CN"], ["zh", "en", "zh-CN|en-GB"],
+] as const)("retains provider language routing %s → %s", async (source, target, pair) => {
+  const f = vi.fn().mockResolvedValue(ok("翻譯結果"));
+  vi.stubGlobal("fetch", f);
+  await onlineTranslate("test", source, target, new AbortController().signal);
+  expect(f.mock.calls[0][0].searchParams.get("langpair")).toBe(pair);
+});

@@ -1,0 +1,86 @@
+{
+  "checkedAt": "2026-10-16T14:40:54.517Z",
+  "mode": "Node HTTP, actual MyMemory API; no mocks",
+  "nativeSpeakerReviewed": false,
+  "iphoneAudioTested": false,
+  "rows": [
+    {
+      "source": "zh",
+      "target": "yue",
+      "text": "我们明天坐公交车去机场。",
+      "providerText": "我哋聽日坐巴士去機場。",
+      "output": "我哋聽日搭巴士去機場。",
+      "rules": [
+        "spoken-clause"
+      ],
+      "status": "response-received"
+    },
+    {
+      "source": "en",
+      "target": "yue",
+      "text": "I have a meeting today.",
+      "providerText": "我今日有個會議。",
+      "output": "我今日有個 meeting。",
+      "rules": [
+        "spoken-clause"
+      ],
+      "status": "response-received"
+    },
+    {
+      "source": "en",
+      "target": "yue",
+      "text": "I use social media.",
+      "providerText": "我用社交媒體。",
+      "output": "我用 social media。",
+      "rules": [
+        "spoken-clause"
+      ],
+      "status": "response-received"
+    },
+    {
+      "source": "zh",
+      "target": "yue",
+      "text": "会议在9:30开始，不是8:30。",
+      "providerText": "會議喺9:30開始，唔係8:30。",
+      "output": "會議喺9:30開始，唔係8:30。",
+      "rules": [],
+      "status": "response-received"
+    },
+    {
+      "source": "yue",
+      "target": "en",
+      "text": "我想飲水。",
+      "providerText": "I want to drink water.",
+      "output": "I want to drink water.",
+      "rules": [],
+      "status": "response-received"
+    },
+    {
+      "source": "en",
+      "target": "zh",
+      "text": "I would like a glass of water.",
+      "providerText": "喝杯水",
+      "output": "喝杯水",
+      "rules": [],
+      "status": "response-received"
+    },
+    {
+      "source": "zh",
+      "target": "en",
+      "text": "我想喝水。",
+      "providerText": "I would like water",
+      "output": "I would like water",
+      "rules": [],
+      "status": "response-received"
+    },
+    {
+      "source": "yue",
+      "target": "zh",
+      "text": "我想飲水。",
+      "providerText": "我想喝水。",
+      "output": "我想喝水。",
+      "rules": [],
+      "status": "response-received"
+    }
+  ]
+}
