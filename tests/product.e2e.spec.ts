@@ -145,7 +145,7 @@ test("opening the wake phrase panel never starts the microphone", async ({
       throw new Error("unexpected");
     };
   });
-  await page.getByText("Your voice. A little magic.", { exact: true }).click();
+  await page.getByText("Wake phrase", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: /Record a take/ }),
   ).toBeVisible();
@@ -198,4 +198,54 @@ test("uses a stacked phone layout and a two-column desktop layout without overfl
     desktopInput!.x + desktopInput!.width,
   );
   expect(Math.abs(desktopOutput!.y - desktopInput!.y)).toBeLessThan(2);
+});
+
+test("aurora follows actual recognition activity, errors and explicit stop", async ({ page }) => {
+  await page.evaluate(() => {
+    (window as any).__audioRequests = 0;
+    navigator.mediaDevices.getUserMedia = async () => {
+      (window as any).__audioRequests++;
+      throw Error("The indicator must not open a second microphone stream");
+    };
+    (window as any).SpeechRecognition = class {
+      onstart: any;
+      onerror: any;
+      start() { (window as any).__recognizer = this; }
+      abort() {}
+    };
+  });
+  page.on("dialog", dialog => dialog.accept());
+  const aurora = page.getByRole("region", { name: "Microphone status" });
+  await expect(aurora).toHaveCount(0);
+  await page.getByRole("button", { name: "Voice input", exact: true }).click();
+  await expect(aurora).toHaveCount(0);
+  await page.evaluate(() => (window as any).__recognizer.onstart());
+  await expect(aurora).toBeVisible();
+  await page.getByRole("button", { name: "Stop microphone", exact: true }).click();
+  await expect(aurora).toHaveCount(0);
+  await page.getByRole("button", { name: "Voice input", exact: true }).click();
+  await page.evaluate(() => (window as any).__recognizer.onstart());
+  await expect(aurora).toBeVisible();
+  await page.evaluate(() => (window as any).__recognizer.onerror({ error: "network" }));
+  await expect(aurora).toHaveCount(0);
+  expect(await page.evaluate(() => (window as any).__audioRequests)).toBe(0);
+});
+
+test("phone aurora respects reduced motion and stops when changing screens", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(() => {
+    (window as any).SpeechRecognition = class {
+      onstart: any;
+      start() { setTimeout(() => this.onstart?.(), 10); }
+      abort() {}
+    };
+  });
+  page.on("dialog", dialog => dialog.accept());
+  await page.getByRole("button", { name: "Voice input", exact: true }).click();
+  await expect(page.locator(".capture-aurora")).toBeVisible();
+  expect(await page.locator(".aurora-thread").evaluate(el => getComputedStyle(el).animationName)).toBe("none");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(page.locator(".capture-aurora")).toHaveCount(0);
 });

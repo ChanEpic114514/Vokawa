@@ -1,0 +1,49 @@
+/* Motion indicates capture activity, not microphone amplitude or recognition progress. */
+.capture-aurora {
+  position: relative;
+  isolation: isolate;
+  min-height: 92px;
+  margin: -6px 0 22px;
+  border-block: 1px solid #ffffff09;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #9385b503, #b18caa07, #c29d8903);
+}
+.aurora-art { position: absolute; inset: 0; pointer-events: none; }
+.aurora-art svg { width: 100%; height: 72px; display: block; }
+.aurora-halo { stroke-width: 13; opacity: .19; filter: blur(9px); }
+.aurora-thread { stroke-width: 1.6; opacity: .8; }
+.aurora-echo { stroke-width: 1; opacity: .42; }
+.aurora-thread, .aurora-halo {
+  transform-origin: center;
+  animation: aurora-breathe 5.5s ease-in-out infinite alternate;
+}
+.aurora-echo { transform-origin: center; animation: aurora-breathe 7s ease-in-out infinite alternate-reverse; }
+@keyframes aurora-breathe {
+  from { transform: translateY(-5px) scaleY(.7); }
+  to { transform: translateY(5px) scaleY(1.15); }
+}
+.capture-controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 47px 14px 7px;
+}
+.capture-controls > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #c1b9c9;
+  font-size: 12px;
+}
+.capture-controls > span i { width: 5px; height: 5px; border-radius: 50%; background: #b29bbd; }
+.capture-controls button { min-height: 36px; padding: 7px 12px; font-size: 12px; background: #17181de6; }
+@media (max-width: 540px) {
+  .capture-aurora { margin-bottom: 16px; }
+  .capture-controls button { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .capture-aurora * { animation: none !important; }
+}

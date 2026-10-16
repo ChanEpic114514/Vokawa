@@ -1,3 +1,4 @@
+import { setCaptureActive } from "./capture-state";
 import { locales, type Lang } from "./model";
 import { t } from "./i18n";
 export interface Recognition {
@@ -63,11 +64,13 @@ export function recognitionError(code: string) {
     : t("语音识别失败：", "Speech recognition failed: ") + code;
 }
 export class Microphone {
+  private readonly captureSource = Symbol("Microphone");
   private active: Recognition | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private startup: ReturnType<typeof setTimeout> | undefined;
   private finish: (() => void) | undefined;
   stop() {
+    setCaptureActive(this.captureSource, false);
     const rec = this.active;
     this.active = null;
     clearTimeout(this.timer);
@@ -130,6 +133,7 @@ export class Microphone {
     rec.onstart = () => {
       if (this.active !== rec) return;
       clearTimeout(this.startup);
+      setCaptureActive(this.captureSource, true);
       options.onReady?.();
     };
     rec.onresult = (e) => {

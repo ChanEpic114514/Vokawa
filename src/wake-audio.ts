@@ -1,3 +1,4 @@
+import { setCaptureActive } from "./capture-state";
 import { Features, type Frame } from "./wake-core";
 import { t } from "./i18n";
 const processor = `class Capture extends AudioWorkletProcessor {
@@ -14,12 +15,14 @@ const processor = `class Capture extends AudioWorkletProcessor {
  }
 }registerProcessor('vokawa-capture',Capture);`;
 export class WakeAudio {
+  private readonly captureSource = Symbol("WakeAudio");
   private generation = 0;
   private stream: MediaStream | null = null;
   private context: AudioContext | null = null;
   private node: AudioWorkletNode | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
   stop() {
+    setCaptureActive(this.captureSource, false);
     this.generation++;
     this.node?.disconnect();
     if (this.node) this.node.port.onmessage = null;
@@ -108,6 +111,7 @@ export class WakeAudio {
       silent.gain.value = 0;
       node.connect(silent);
       silent.connect(context.destination);
+      setCaptureActive(this.captureSource, true);
     } catch (e) {
       if (id !== this.generation) return;
       this.stop();

@@ -17,8 +17,8 @@ export default defineConfig({
         start_url: "./",
         scope: "./",
         display: "standalone",
-        background_color: "#0c0e17",
-        theme_color: "#0c0e17",
+        background_color: "#101114",
+        theme_color: "#101114",
         icons: [
           {
             src: "vokawa-icon-v2.png",

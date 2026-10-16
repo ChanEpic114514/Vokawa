@@ -1,3 +1,4 @@
+import { CaptureAurora } from "./CaptureAurora";
 import { RELEASE } from "./release";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -26,34 +27,13 @@ const tabNames: Record<Tab, [string, string]> = {
   book: ["记录", "Phrasebook"],
   settings: ["设置", "Settings"],
 };
-const titles: Record<Tab, [string, string]> = {
-  translate: ["让每一句，都更靠近。", "A little closer.\nIn every language."],
-  chat: ["让对话，自然继续。", "Keep the\nconversation flowing."],
-  sound: ["听见语言的细节。", "Find the sound\nof every word."],
-  book: ["把想说的话，留在这里。", "Words worth\nkeeping."],
-  settings: ["你的语言，你的节奏。", "Make yourself\nat home."],
-};
+const titles = tabNames;
 const descriptions: Record<Tab, [string, string]> = {
-  translate: [
-    "英语、普通话、粤语。随心表达，自然交流。",
-    "English, Mandarin, Cantonese. A space for everything you want to say.",
-  ],
-  chat: [
-    "在两种语言之间，轮流表达。",
-    "Take turns and let your words meet halfway.",
-  ],
-  sound: [
-    "从一句话，到每一个字。",
-    "From the whole thought to the smallest sound.",
-  ],
-  book: [
-    "重温对话，收藏下一次会用到的表达。",
-    "Revisit a conversation. Save a phrase for the next one.",
-  ],
-  settings: [
-    "按你的习惯，调整 Vokawa。",
-    "A few small choices to make Vokawa yours.",
-  ],
+  translate: ["英语、普通话与粤语互译", "Translate between English, Mandarin and Cantonese"],
+  chat: ["轮流输入，翻译并朗读对话", "Take turns translating and listening"],
+  sound: ["整句朗读与单字发音", "Sentence playback and character pronunciation"],
+  book: ["查看翻译历史与收藏", "Translation history and saved phrases"],
+  settings: ["语言、语音与本机存储设置", "Language, speech and local storage settings"],
 };
 export function CharacterAudio({
   text,
@@ -533,7 +513,7 @@ export default function App({
           </span>
         </a>
         <div className="sidebar-label">
-          {t("你的语言空间", "YOUR LANGUAGE SPACE")}
+          {t("功能", "WORKSPACE")}
         </div>
         <nav aria-label={t("主导航", "Main navigation")}>
           {tabs.map((item) => (
@@ -550,14 +530,6 @@ export default function App({
           ))}
         </nav>
         <div className="sidebar-note">
-          <div className="small-orbit" aria-hidden="true">
-            粵
-          </div>
-          <p>
-            {t("每一种表达，", "Every voice,")}
-            <br />
-            {t("都有它的回响。", "a new connection.")}
-          </p>
           <span>VOKAWA · {RELEASE}</span>
         </div>
       </aside>
@@ -596,25 +568,11 @@ export default function App({
         <main>
           <section className="hero">
             <div>
-              <div className="eyebrow">
-                <span />
-                {tab === "translate"
-                  ? "WORDS WITHOUT BORDERS"
-                  : tab === "sound"
-                    ? "THE WAY WORDS SOUND"
-                    : "A SPACE TO CONNECT"}
-              </div>
               <h1>{t(...titles[tab])}</h1>
               <p>{t(...descriptions[tab])}</p>
             </div>
-            <div className="language-sculpture" aria-hidden="true">
-              <div className="orbit-line" />
-              <span className="tile tile-ja">あ</span>
-              <span className="tile tile-yue">粵</span>
-              <span className="tile tile-en">A</span>
-              <i />
-            </div>
           </section>
+          <CaptureAurora onStop={stop} />
           {(tab === "translate" || tab === "chat") && (
             <>
               <div className="language-bar">
@@ -637,7 +595,7 @@ export default function App({
                 />
                 <span className="language-bar-note">
                   <Icon name="globe" size={15} />
-                  {t("连接每一种表达", "Made for connection")}
+                  {t("文字与语音输入", "Text and voice input")}
                 </span>
               </div>
               <div className="translation-grid">
@@ -755,7 +713,7 @@ export default function App({
                       <Wave active={busy} />
                       <p role="status">
                         {busy
-                          ? t("正在寻找合适的表达…", "Finding the right words…")
+                          ? t("正在翻译…", "Translating…")
                           : t(
                               "等待你的第一句话",
                               "Your next connection starts here",
@@ -797,7 +755,7 @@ export default function App({
                   </span>
                   <span>
                     <strong>
-                      {t("一句咒语，开始表达", "Your voice. A little magic.")}
+                      {t("咒语唤醒", "Wake phrase")}
                     </strong>
                     <small>
                       {t(
@@ -1005,8 +963,8 @@ export default function App({
                       {query
                         ? t("没有找到这句话", "No matching phrases")
                         : t(
-                            "留一点表达，给未来的你",
-                            "A few words for your future self",
+                            "还没有保存的翻译",
+                            "No saved translations yet",
                           )}
                     </h2>
                     <p>
