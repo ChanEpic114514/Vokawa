@@ -1,6 +1,12 @@
-# Vokawa 0.6
+# Vokawa 0.9
 
 English, Mandarin and Cantonese translation with a bilingual interface, system speech, exact Ekho syllable recordings and an optional local acoustic wake phrase.
+
+## Vokawa Lens
+
+Open **Lens / 镜头** to take a photo or choose an image, select English / Simplified / Traditional Chinese OCR, crop or rotate, and recognize text locally. Review the editable result, select **Translate**, then **Listen**. Cantonese text uses the Traditional Chinese model by default; some colloquial characters are misread and require correction.
+
+[Read the Lens guide, privacy details and limitations](docs/LENS.md). OCR assets are self-hosted and loaded on demand. Images stay on the device; translation sends only the reviewed text to the selected provider. First OCR use requires internet. Translation and system voices retain their existing limitations.
 
 ## Run locally
 
@@ -13,7 +19,7 @@ npm run build
 npm run dev -- --port 5173 --strictPort
 ```
 
-Open http://localhost:5173. The predev/prebuild script restores the included audio archives and verifies their SHA-256. No Ollama installation or Python server is required for the default MyMemory translation and system speech path.
+Open http://localhost:5173. The predev/prebuild scripts restore the included audio archives, verify their SHA-256 and prepare the pinned OCR runtime and language assets. No Ollama installation or Python server is required for the default MyMemory translation and system speech path.
 
 Read [the Chinese update guide](docs/UPDATE_V06_ZH.md) before replacing an existing checkout. This is a whole-project update, not a replacement for `src/main.tsx` alone.
 
@@ -42,6 +48,7 @@ System Cantonese voices depend on the device. Sentence-level pronunciations and 
 ## Source map
 
 - `src/main.tsx`: React bootstrap.
+- `src/LensPanel.tsx`, `src/lens-image.ts`, `src/lens-ocr.ts`, `src/lens.css`: camera input, image preparation, local OCR and Lens UI.
 - `src/App.tsx`, `src/style.css`, `src/Icon.tsx`: application, layout and icons.
 - `src/i18n.ts`, `src/messages.ts`: interface language and service message localization.
 - `src/translation.ts`, `src/model.ts`: translation requests, data and saved preferences.
@@ -54,14 +61,14 @@ System Cantonese voices depend on the device. Sentence-level pronunciations and 
 
 ## Verification
 
-See [the verification report](docs/V06_VERIFICATION.md) for the checks actually executed. Browser scenarios are included but were not run in the generation environment. To run them locally after building:
+The [v0.6 verification report](docs/V06_VERIFICATION.md) is historical. Current unit, build, Chromium, WebKit Lens and preserved backend checks run in GitHub Actions. Lens uses real OCR images and models in browser tests; see [Lens verification scope](docs/LENS.md). To run Chromium scenarios locally after building:
 
 ```sh
 npx playwright install chromium
 npm run test:e2e
 ```
 
-These tests mock translation and speech-service responses. They do not certify real transcription, Cantonese pronunciation or iPhone microphone behavior.
+These tests mock translation responses and speech output, but Lens OCR uses real local workers and models. They do not certify real transcription, Cantonese pronunciation or iPhone microphone behavior.
 
 ## Deployment
 
