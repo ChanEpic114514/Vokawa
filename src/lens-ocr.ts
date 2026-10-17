@@ -2,7 +2,8 @@ export type OcrScript = "eng" | "chi_sim" | "chi_tra";
 export type OcrLayout = "document" | "scattered";
 export type OcrProgress = { phase: "loading" | "recognizing"; progress: number };
 export type OcrResult = { text: string; confidence: number };
-export const ocrLanguages = (script: OcrScript) => script === "eng" ? ["eng"] : [script, "eng"];
+// Use one script model: combining English with Chinese can turn short Han lines into Latin gibberish.
+export const ocrLanguages = (script: OcrScript) => [script];
 export const cleanOcrText = (text: string) => text.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").trim();
 export const ocrAssetBase = (base = import.meta.env.BASE_URL, href = document.baseURI) => new URL(`${base}ocr/v1/`, href);
 

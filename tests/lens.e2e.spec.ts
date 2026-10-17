@@ -48,7 +48,7 @@ for (const [image, source, expected] of [
   ["traditional", "yue", ["營業通知", "星期一至星期五", "上午九時至下午六時"]],
   ["cantonese", "yue", ["聽日見", "唔可以食"]],
 ] as const) {
-  test(`Lens recognizes a real ${image} image with Chinese and English models`, async ({ page }, testInfo) => {
+  test(`Lens recognizes a real ${image} image with its selected script model`, async ({ page }, testInfo) => {
     test.setTimeout(150000); await openLens(page);
     await page.getByRole("combobox", { name: "FROM", exact: true }).selectOption(source);
     const text = await recognize(page, image);
@@ -90,4 +90,20 @@ test("Lens supports crop, rotation, bilingual UI and rejects unsupported images"
   await expect(page.getByRole("button", { name: "识别文字", exact: true })).toBeVisible();
   await page.getByLabel("选择图片文件", { exact: true }).setInputFiles({ name: "bad.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") });
   await expect(page.getByRole("status").filter({ hasText: "无法读取此图片" })).toBeVisible();
+});
+test("Lens reuses downloaded OCR resources offline without sending a translation request", async ({ page, context }) => {
+  test.setTimeout(150000); await openLens(page);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true }));
+  });
+  const first = await recognize(page, "english");
+  await expect.poll(async () => page.evaluate(async () => {
+    const cache = await caches.open("vokawa-ocr-v1");
+    return (await cache.keys()).some(r => r.url.endsWith("eng.traineddata.gz"));
+  })).toBe(true);
+  await context.setOffline(true);
+  await page.getByRole("button", { name: "Recognize text", exact: true }).click();
+  await expect(page.getByLabel("Text to translate", { exact: true })).toHaveValue(first, { timeout: 120000 });
+  await context.setOffline(false);
 });

@@ -26,7 +26,7 @@ describe("Lens image preparation", () => {
   it("keeps names, punctuation, numbers and long text intact", () => {
     expect(cleanOcrText("\u0000  牛肉飯 $38\r\n09:00  \r出口  ")).toBe("牛肉飯 $38\n09:00  \n出口");
     expect(cleanOcrText("字".repeat(4000))).toHaveLength(4000);
-    expect(ocrLanguages("chi_tra")).toEqual(["chi_tra", "eng"]);
+    expect(ocrLanguages("chi_tra")).toEqual(["chi_tra"]);
     expect(ocrLanguages("eng")).toEqual(["eng"]);
     expect(ocrAssetBase("./", "https://example.com/Vokawa/?v=1").href).toBe(base.href);
   });

@@ -789,7 +789,7 @@ export default function App({
 
                 <span className="language-bar-note">
                   <Icon name="globe" size={15} />
-                  {t("文字与语音输入", "Text and voice input")}
+                  {tab === "lens" ? t("图片文字识别", "Text from images") : t("文字与语音输入", "Text and voice input")}
                 </span>
               </div>
 
@@ -933,7 +933,7 @@ export default function App({
                       <p role="status">
                         {busy
                           ? t("正在翻译…", "Translating…")
-                          : t(
+                          : tab === "lens" ? t("等待识别与翻译", "Ready to recognize and translate") : t(
                               "等待你的第一句话",
                               "Your next connection starts here",
                             )}

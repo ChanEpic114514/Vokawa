@@ -99,12 +99,12 @@ export function LensPanel(props: Props) {
     <input ref={album} hidden type="file" accept="image/*" aria-label={t("选择图片文件", "Choose an image file")} onChange={e => { void choose(e.target.files?.[0]); e.target.value = ""; }} />
     <div className="lens-toolbar"><strong><Icon name="lens" /> Vokawa Lens</strong><div>
       <button className="primary" disabled={busy} onClick={() => { callbacks.current.onPrepare(); camera.current?.click(); }}>{t("拍照", "Camera")}</button>
-      <button className="secondary" disabled={busy} onClick={() => album.current?.click()}>{t("选择图片", "Choose image")}</button>
+      <button className="secondary" disabled={busy} onClick={() => { callbacks.current.onPrepare(); album.current?.click(); }}>{t("选择图片", "Choose image")}</button>
     </div></div>
     <p className="lens-note">{t("图片留在本机处理。点击翻译后，文字会发送到你选用的翻译服务。", "Images are processed on your device. Translating sends the text to your selected translation service.")}</p>
     <div className="lens-options">
       <label>{t("图片文字", "Image script")}<select value={script} disabled={busy} onChange={e => { invalidate(); setScript(e.target.value as OcrScript); }}>
-        <option value="eng">{t("英文", "English")}</option><option value="chi_sim">{t("简体中文 + 英文", "Simplified Chinese + English")}</option><option value="chi_tra">{t("繁体／粤语字 + 英文", "Traditional / Cantonese + English")}</option>
+        <option value="eng">{t("英文", "English")}</option><option value="chi_sim">{t("简体中文", "Simplified Chinese")}</option><option value="chi_tra">{t("繁体／粤语字", "Traditional / Cantonese")}</option>
       </select></label>
       <label>{t("排版", "Layout")}<select value={layout} disabled={busy} onChange={e => { invalidate(); setLayout(e.target.value as OcrLayout); }}>
         <option value="document">{t("通知／连续文字", "Notice / continuous text")}</option><option value="scattered">{t("路牌／餐牌散列文字", "Sign / scattered menu text")}</option>

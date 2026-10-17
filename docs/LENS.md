@@ -6,7 +6,7 @@ Lens adds camera/photo OCR to the existing translation and playback interface. I
 
 1. Open **Lens / 镜头**. Set FROM and TO to the source and target languages.
 2. Choose Camera (the system camera on supported phones), or Choose image. Camera capture is only requested after a tap; the browser controls the picker. Desktop browsers may show a file picker instead.
-3. Set Image script to match the printed characters. A Mandarin source can still use Traditional Chinese OCR. Cantonese defaults to Traditional Chinese + English.
+3. Set Image script to match the printed characters. A Mandarin source can still use Traditional Chinese OCR. Cantonese defaults to Traditional Chinese. The Chinese models can also recognize basic Latin characters, but English-heavy sections are best selected separately with the English model.
 4. Rotate if needed. Drag to select one sign, menu item or paragraph. Use the scattered-text layout for separated labels; use continuous-text layout for paragraphs.
 5. Select Recognize text. Review and edit the result in the existing input box. Names, prices, numbers and Cantonese characters require particular attention.
 6. Select Translate, then Listen in the result. Existing history, favorites and character playback remain available.
@@ -21,7 +21,7 @@ Lens adds camera/photo OCR to the existing translation and playback interface. I
 
 ## Accuracy and device limits
 
-Tesseract recognizes printed characters, not spoken language. Traditional Chinese data covers many Cantonese characters but is not a dedicated Cantonese OCR model. In the authored clear-print sample `我哋聽日見。呢度唔可以食嘢。`, local OCR misread `哋` and `嘢`. Confidence alone did not reliably flag these mistakes. Lens therefore provides editable text and does not silently repair guessed words or auto-translate a photo.
+Tesseract recognizes printed characters, not spoken language. Traditional Chinese data covers many Cantonese characters but is not a dedicated Cantonese OCR model. In the authored clear-print sample `我哋聽日見。呢度唔可以食嘢。`, local OCR misread `哋` and `嘢`. Combining Chinese and English models in the browser also misread the first Cantonese line as Latin letters. The shipped default therefore uses only the selected script model; its readable spans are checked in browser tests. A larger 26 MiB traditional model still misread these two characters in a local comparison, so it was not selected. Confidence alone did not reliably flag these mistakes. Lens therefore provides editable text and does not silently repair guessed words or auto-translate a photo.
 
 Glare, handwriting, stylized signs, curved pages, low resolution and multi-column menus can produce wrong characters or reading order. Select smaller regions and review the result. This version does not reconstruct menu tables, translate overlays on the camera view, or claim every image is readable.
 
