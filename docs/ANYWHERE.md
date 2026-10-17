@@ -34,6 +34,8 @@ The old HK Native postprocessor was still wired into the repository's translatio
 
 Run after building:
 
+API-mocked Anywhere cases block service workers because worker-controlled requests can bypass Playwright routing in WebKit. A separate case enables the real production service worker, waits for control, imports text offline, checks that no translation fetch is invoked and reloads from the offline cache without restoring the unconfirmed draft.
+
 ```sh
 npm test
 npm run build

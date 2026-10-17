@@ -1,4 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
+// Service workers can bypass Playwright network mocks, especially in WebKit.
+test.use({ serviceWorkers: "block" });
 const prefix = "#vokawa-share=";
 const sharedURL = (text: string) => "/Vokawa/" + prefix + encodeURIComponent(text);
 const input = (page: Page) => page.getByLabel("Text to translate", { exact: true });
@@ -139,4 +141,35 @@ test("Anywhere installation guide provides a working test link and leaves normal
   await page.getByRole("button", { name: "中文", exact: true }).click();
   await expect(page.getByRole("button", { name: "确认并翻译", exact: true })).toBeVisible();
   await page.screenshot({ path: "test-results/anywhere-phone.png", fullPage: true });
+});
+
+test.describe("Installed service worker", () => {
+  test.use({ serviceWorkers: "allow" });
+  test("Anywhere clears shared text on an offline reload without invoking translation", async ({ page, context }) => {
+    await page.addInitScript(() => {
+      const originalFetch = window.fetch;
+      (window as any).__translationCalls = 0;
+      window.fetch = (...args) => {
+        if (String(args[0]).includes("api.mymemory.translated.net")) {
+          (window as any).__translationCalls++;
+          return Promise.reject(Error("Unexpected translation before confirmation"));
+        }
+        return originalFetch(...args);
+      };
+    });
+    await page.goto("/Vokawa/");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) await new Promise<void>(resolve => navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true }));
+    });
+    await context.setOffline(true);
+    await shareAgain(page, "offline private 分享 + %");
+    await expect(page.getByRole("button", { name: "Confirm and translate", exact: true })).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__translationCalls)).toBe(0);
+    await page.reload();
+    await expect(input(page)).toHaveValue("");
+    expect(await page.evaluate(() => location.hash)).toBe("");
+    expect(await page.evaluate(() => (window as any).__translationCalls)).toBe(0);
+    expect(await page.evaluate(() => JSON.stringify({ ...localStorage }))).not.toContain("offline private");
+  });
 });
