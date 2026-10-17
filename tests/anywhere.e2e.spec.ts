@@ -38,8 +38,8 @@ test("Anywhere round-trips mixed text and only sends the edited text after confi
   await page.getByRole("button", { name: "Confirm and translate", exact: true }).click();
   await expect(page.locator(".translation-text")).toHaveText("確認後的譯文");
   expect(queries).toEqual(["edited + 50% & #"]);
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("vokawa-v2") || "{}").history);
-  expect(saved[0].sourceText).toBe("edited + 50% & #");
+  // Persistence runs in a React effect after the result is painted.
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("vokawa-v2") || "{}").history?.[0]?.sourceText)).toBe("edited + 50% & #");
 });
 test("Anywhere clears a cold-start URL before the app bundle loads", async ({ page }) => {
   let release!: () => void; const gate = new Promise<void>(r => { release = r; });
