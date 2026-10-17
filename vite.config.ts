@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -5,6 +6,13 @@ export default defineConfig({
   base: "./",
   plugins: [
     react(),
+    {
+      name: "vokawa-anywhere-bootstrap",
+      transformIndexHtml: {
+        order: "pre",
+        handler: (html) => html.replace("<!-- anywhere-bootstrap -->", `<script>${readFileSync(new URL("./scripts/anywhere-boot.js", import.meta.url), "utf8")}</script>`),
+      },
+    },
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",

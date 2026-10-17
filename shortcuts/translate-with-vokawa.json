@@ -1,0 +1,25 @@
+{
+  "name": "Translate with Vokawa",
+  "format": "manual-shortcut-recipe-v1",
+  "installMethod": "Create once in the iPhone Shortcuts editor using public/anywhere.html. This JSON is a configuration reference, not an importable .shortcut file.",
+  "showInShareSheet": true,
+  "inputTypes": ["Text", "Rich text"],
+  "ifNoInput": "Ask For Text",
+  "urlPrefix": "https://chanepic114514.github.io/Vokawa/#vokawa-share=",
+  "maxCharacters": 3000,
+  "actions": [
+    { "action": "Get Text from Input", "input": "Shortcut Input", "output": "Plain Text" },
+    { "action": "Combine Text", "input": "Plain Text", "separator": "New Lines", "output": "Combined Text" },
+    { "action": "Count", "input": "Combined Text", "unit": "Characters", "output": "Character Count" },
+    { "action": "If", "input": "Character Count", "condition": "is greater than", "value": 3000,
+      "then": [
+        { "action": "Show Alert", "text": "文字过长，请选取不超过 3,000 字符的段落重新分享。" },
+        { "action": "Stop This Shortcut", "output": null }
+      ]
+    },
+    { "action": "URL Encode", "mode": "Encode", "input": "Combined Text", "output": "Encoded Text" },
+    { "action": "Text", "parts": ["https://chanepic114514.github.io/Vokawa/#vokawa-share=", { "variable": "Encoded Text" }], "output": "Share URL Text" },
+    { "action": "URL", "input": "Share URL Text", "output": "Share URL" },
+    { "action": "Open URLs", "input": "Share URL" }
+  ]
+}

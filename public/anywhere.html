@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="referrer" content="no-referrer">
+<title>安装 Vokawa Anywhere</title><link rel="icon" href="./vokawa-icon-v2.png">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#101114;color:#eeeaf4}*{box-sizing:border-box}body{margin:0}main{max-width:880px;margin:auto;padding:32px 20px 80px}a{color:#d6c0ef;text-underline-offset:4px}header{display:flex;gap:14px;align-items:center;border-bottom:1px solid #ffffff1a;padding-bottom:24px}header img{width:42px;border-radius:12px}header a{margin-left:auto}h1{font-size:clamp(27px,6vw,40px);letter-spacing:-1px;margin:36px 0 12px}h2{font-size:21px;margin-top:34px}p,li{line-height:1.85;color:#c6c2ce}li{margin:12px 0}strong{color:#f0e9f7}code,pre{font-family:ui-monospace,monospace;font-size:13px;background:#23212b;border-radius:6px}code{padding:3px 5px;overflow-wrap:anywhere}pre{padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.note{border:1px solid #c0aed935;border-radius:16px;padding:18px 22px;background:linear-gradient(120deg,#bba5d910,#d9ad9810)}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:560px}td,th{border-bottom:1px solid #ffffff1a;text-align:left;padding:14px 10px;line-height:1.7;vertical-align:top}th{font-size:12px;color:#b9abc9}td{font-size:14px}small{color:#aaa}button{padding:12px 18px;border:1px solid #c0aed950;border-radius:10px;background:#c0aed9;color:#211b29;font:inherit;cursor:pointer}.actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}footer{margin-top:40px;border-top:1px solid #ffffff1a;padding-top:20px;font-size:13px}
+</style>
+</head>
+<body><main>
+<header><img src="./vokawa-icon-v2.png" alt=""><strong>Vokawa Anywhere</strong><a href="./">返回翻译</a></header>
+<h1>从分享菜单打开 Vokawa</h1>
+<p>只需在 iPhone「快捷指令」中配置一次。以后在支持系统文字分享的 App 中，选择文字 → 分享 → <strong>Translate with Vokawa</strong>。Vokawa 会填入原文，等你确认语言并点击「确认并翻译」。</p>
+<div class="note"><strong>这是手动创建安装教程，不是一键安装链接。</strong><p>此环境无法在 Apple 设备上签名、导出或实机运行快捷指令，因此没有提供未经验证的 .shortcut 文件或虚构的 iCloud 安装链接。下面是完整的原生操作配置，不需要付费、开发者账号、第三方快捷指令工具或 API 密钥。</p></div>
+<h2>1. 创建分享入口</h2>
+<ol>
+<li>打开 iPhone 自带的 <strong>快捷指令 / Shortcuts</strong>，点 <strong>＋</strong> 新建，命名为 <strong>Translate with Vokawa</strong>。</li>
+<li>打开快捷指令的 <strong>详细信息 / Details</strong>（不同 iOS 版本可能在顶部名称菜单或底部信息按钮中），开启 <strong>在共享表单中显示 / Show in Share Sheet</strong>。</li>
+<li>顶部会出现接收输入的设置。点输入类型，清除其他类型，只开启 <strong>文本 / Text</strong> 与 <strong>富文本 / Rich text</strong>。不要选图像、文件、Safari 网页或所有类型。</li>
+<li>将 <strong>如果没有输入 / If there is no input</strong> 设置为 <strong>询问 / Ask For → 文本 / Text</strong>。这样直接运行时可以手动粘贴；不使用自动读取剪贴板。</li>
+</ol>
+<h2>2. 按顺序添加操作</h2>
+<p>搜索下面的操作名称。中文名称可能因系统语言略有不同，可参照英文名称。<strong>输入栏里的变量必须通过「选择变量」插入，不能把变量名称当成普通文字输入。</strong>「计数」及「如果」之后，后面的编码操作仍须明确选择第 2 步的「合并后的文本」。</p>
+<div class="scroll"><table>
+<thead><tr><th>顺序</th><th>操作</th><th>配置</th></tr></thead><tbody>
+<tr><td>1</td><td>从输入中获取文本<br>Get Text from Input</td><td>输入：<strong>快捷指令输入 / Shortcut Input</strong>。将富文本转为纯文本。</td></tr>
+<tr><td>2</td><td>合并文本<br>Combine Text</td><td>输入：第 1 步的文本；分隔符：<strong>新行 / New Lines</strong>。单段内容及原有换行会保留；多项文本用换行连接。</td></tr>
+<tr><td>3</td><td>计数<br>Count</td><td>输入：<strong>合并后的文本</strong>；计数单位：<strong>字符 / Characters</strong>。</td></tr>
+<tr><td>4</td><td>如果<br>If</td><td>如果「计数结果」<strong>大于 3000</strong>，在此分支中添加「显示提醒 / Show Alert」：<em>文字过长，请选取不超过 3,000 字符的段落重新分享。</em>；然后添加「停止此快捷指令 / Stop This Shortcut」。若系统显示「停止并输出 / Stop and Output」，设为不输出内容。否则分支不放操作；继续到「结束如果」。</td></tr>
+<tr><td>5</td><td>URL 编码<br>URL Encode</td><td>模式：<strong>编码 / Encode</strong>；输入：第 2 步的<strong>合并后的文本</strong>，不是字符计数或「如果」结果。只编码一次，且只编码文字。</td></tr>
+<tr><td>6</td><td>文本<br>Text</td><td>输入下面的网址前缀，紧接着插入第 5 步的<strong>URL 编码后的文本</strong>变量。中间没有空格或换行。</td></tr>
+<tr><td>7</td><td>URL</td><td>输入：第 6 步完整的<strong>文本</strong>变量。不要再次编码。</td></tr>
+<tr><td>8</td><td>打开 URL<br>Open URLs</td><td>输入：第 7 步的 <strong>URL</strong> 变量。不要使用「获取 URL 内容」或直接请求 MyMemory。</td></tr>
+</tbody></table></div>
+<p>第 6 步的网址前缀：</p>
+<pre id="prefix">https://chanepic114514.github.io/Vokawa/#vokawa-share=</pre>
+<div class="actions"><button id="copy" type="button">复制网址前缀</button><span id="copy-status" role="status"></span></div>
+<p>第 6 步的最终视觉形式如下；方括号表示插入的变量块，<strong>不要手打方括号或变量名字</strong>：</p>
+<pre>https://chanepic114514.github.io/Vokawa/#vokawa-share=[URL 编码后的文本]</pre>
+<p>完成后保存快捷指令。首次运行若系统询问是否允许打开 Vokawa 网站，请检查域名为 <code>chanepic114514.github.io</code> 后允许。建议先将 Safari 设为默认浏览器；打开 URL 的具体去向由 iOS 和默认浏览器设置决定。</p>
+<h2>3. 第一次检查</h2>
+<p>在备忘录中新建下面的两行文本，选中 → 分享 → Translate with Vokawa：</p>
+<pre>Hello + 100% &amp; #? = 你好！
+我哋聽日見 😊</pre>
+<ol>
+<li>Vokawa 原文应包含上面两行，<code>+</code>、<code>%</code>、<code>&amp;</code>、<code>#</code>、标点及 emoji 不应变成乱码。网址中的 <code>#vokawa-share=…</code> 应消失。</li>
+<li>页面应显示「文字已接收，尚未发送」。检查原文及英／普／粤语言方向；只有点击 <strong>确认并翻译</strong> 后才请求翻译，再点击译文的播放按钮朗读。</li>
+<li>确认前刷新：分享文字应清空且不自动发送。再次分享相同或不同文字：应重新填入，并再次等待确认。</li>
+<li>长段落超过上限：应被快捷指令或网页拒绝，不应悄悄截断。App 最终按 UTF-16 长度限制 3,000；一个 emoji 或组合符号可能占多个单位，系统的字符计数与此可能不同。</li>
+</ol>
+<p><a id="receiver-test" href="./#vokawa-share=Hello%20%2B%20100%25%20%26%20%23%3F%20%3D%20%E4%BD%A0%E5%A5%BD%EF%BC%81%0A%E6%88%91%E5%93%8B%E8%81%BD%E6%97%A5%E8%A6%8B%20%F0%9F%98%8A">只测试网页接收端</a>：此链接使用公开测试文字，不会安装快捷指令，也不会自动翻译。</p>
+<h2>Safari、邮件、WhatsApp 怎么用？</h2>
+<p><strong>Safari：</strong>长按并选中网页正文，再用选中文字的「分享」，不要只点击分享整个网页的网址。<strong>邮件：</strong>选中邮件正文后分享。App 必须实际提供系统分享入口，并传出文本。</p>
+<p><strong>WhatsApp 或其他 App：</strong>如果长按文字后确实有系统「分享」，可选本快捷指令；如果只有「复制／转发」，不能强制添加系统分享菜单。请复制文字 → 手动运行本快捷指令 → 在询问框中粘贴。这是明确的兼容回退，不是已经验证所有版本都能直接分享。</p>
+<p>如果菜单里没有快捷指令，检查「在共享表单中显示」、接收类型，以及是否正在分享文字。若收到的只是网址，Vokawa 不会擅自下载网页全文。</p>
+<h2>主屏幕版与隐私</h2>
+<p>接收端支持首次打开及已打开页面的新 Fragment。iOS 是否把 HTTPS 链接交给主屏幕 PWA、Safari 现有标签或新标签，由系统决定；不能保证强制唤起已安装的 PWA，也不能保证与 Safari 共享历史和设置。可靠回退是在浏览器中继续翻译，无需另装 App。</p>
+<p>分享文字放在 URL 的 <code>#</code> 后，不放在查询参数中。页面先清理分享 Fragment，再交给 React 校验；内容仅暂存在内存，不自动写入本机存储或翻译历史。确认前不会请求翻译、录音或朗读。确认后沿用现有翻译服务和历史保存设置。</p>
+<p><strong>Fragment 不是加密。</strong>系统、来源 App、快捷指令及浏览器在交接时仍能接触文字；页面清理不能撤销浏览器同步、扩展或系统已经记录的内容。不要把含私人内容的分享链接转发给别人。清理失败会阻止导入，并提示关闭页面。</p>
+<p>首次使用先在线更新 Vokawa。旧 PWA 缓存可能尚无接收功能；先用 <a href="./api/update.html">更新入口</a>更新，再重新分享。更新过程可能清空尚未确认的分享内容，因此不应依靠它保存草稿。</p>
+<h2>验证范围</h2>
+<p>仓库提供编码、接收、超长／无效输入、重复分享、刷新和确认前网络请求的自动化测试。快捷指令配置已按动作顺序和变量依赖进行静态检查；<strong>未在 iPhone 的快捷指令 App 中搭建或运行，未验证具体 iOS／WhatsApp／邮件版本的分享界面，也未验证 PWA 自动接管链接。</strong></p>
+<footer>Apple 官方资料：<a href="https://support.apple.com/guide/shortcuts/apd163eb9f95/ios" rel="noreferrer">从其他 App 运行快捷指令</a> · <a href="https://support.apple.com/guide/shortcuts/apd8195f96d6/ios" rel="noreferrer">输入类型与无输入处理</a> · <a href="https://support.apple.com/guide/shortcuts/apd68802640c/ios" rel="noreferrer">URL 操作</a><p>配置参考：仓库 <code>shortcuts/translate-with-vokawa.json</code>；它不是可导入的快捷指令文件。</p></footer>
+</main><script>
+document.getElementById("copy").addEventListener("click", async () => {
+  const status = document.getElementById("copy-status");
+  try { await navigator.clipboard.writeText(document.getElementById("prefix").textContent); status.textContent = "已复制"; }
+  catch { status.textContent = "复制不可用，请长按上方网址手动复制。"; }
+});
+</script></body></html>

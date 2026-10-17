@@ -1,6 +1,10 @@
-# Vokawa 0.9
+# Vokawa 0.10
 
 English, Mandarin and Cantonese translation with a bilingual interface, system speech, exact Ekho syllable recordings and an optional local acoustic wake phrase.
+
+## Vokawa Anywhere
+
+Share selected text with an iPhone Shortcut, review it in Vokawa, then confirm translation. [Chinese setup guide](https://chanepic114514.github.io/Vokawa/anywhere.html) · [Protocol, privacy and test scope](docs/ANYWHERE.md). The guide is a complete manual setup recipe; no signed one-tap installer or iPhone device validation is claimed. Existing HK Native postprocessing is no longer called; saved history remains untouched.
 
 ## Vokawa Lens
 

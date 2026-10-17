@@ -249,7 +249,7 @@ test("phone aurora respects reduced motion and stops when changing screens", asy
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.locator(".capture-aurora")).toHaveCount(0);
 });
-test("localizes a provider result and saves it without rewriting existing user history", async ({ page }) => {
+test("preserves provider wording without HK rewriting and keeps existing user history", async ({ page }) => {
   const old = { id: "pre-hk", source: "en", target: "yue", sourceText: "Old input", targetText: "舊的歷史譯文", engine: "old", favorite: true };
   await page.evaluate(entry => {
     const saved = JSON.parse(localStorage.getItem("vokawa-v2") || "{}");
@@ -261,11 +261,11 @@ test("localizes a provider result and saves it without rewriting existing user h
   } }));
   await page.getByLabel("Text to translate", { exact: true }).fill("I have a meeting today.");
   await page.getByRole("button", { name: "Translate", exact: true }).last().click();
-  await expect(page.locator(".translation-text")).toHaveText("我今日有 meeting。");
+  await expect(page.locator(".translation-text")).toHaveText("我今天有会议。");
   const history = await page.evaluate(() => JSON.parse(localStorage.getItem("vokawa-v2") || "{}").history);
   expect(history.find((e: any) => e.id === "pre-hk")).toEqual(old);
-  expect(history[0].engine).toContain("HK Native");
-  expect(history[0].targetText).toBe("我今日有 meeting。");
+  expect(history[0].engine).not.toContain("HK Native");
+  expect(history[0].targetText).toBe("我今天有会议。");
 });
 test("the translation Listen button plays HK and English runs in order", async ({ page }) => {
   await page.evaluate(() => {
@@ -283,7 +283,7 @@ test("the translation Listen button plays HK and English runs in order", async (
     } });
   });
   await page.route("https://api.mymemory.translated.net/get?**", route => route.fulfill({ json: {
-    responseStatus: 200, responseData: { translatedText: "我用社交媒體。" },
+    responseStatus: 200, responseData: { translatedText: "我用 social media。" },
   } }));
   await page.getByLabel("Text to translate", { exact: true }).fill("I use social media.");
   await page.getByRole("button", { name: "Translate", exact: true }).last().click();

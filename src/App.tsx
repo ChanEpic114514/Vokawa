@@ -1,3 +1,5 @@
+import { AnywhereNotice } from "./AnywhereNotice";
+import { receiveSharedContent, type SharedContent } from "./anywhere";
 import { LensPanel } from "./LensPanel";
 import { CaptureAurora } from "./CaptureAurora";
 import { RELEASE } from "./release";
@@ -18,7 +20,6 @@ import { CantonesePlayer, selectedReadings } from "./cantonese";
 import { Microphone } from "./microphone";
 import { pronunciation, jyutping } from "./pronunciation";
 import { onlineTranslate } from "./translation";
-import { nativeTranslation } from "./hk-native";
 import { WakePanel, type WakeHandle } from "./WakePanel";
 
 export type Tab = "translate" | "lens" | "chat" | "sound" | "book" | "settings";
@@ -194,6 +195,7 @@ export default function App({
   const [target, setTarget] = useState<Lang>("yue");
 
   const [input, setInput] = useState("");
+  const [shared, setShared] = useState<SharedContent | null>(null);
   const [result, setResult] = useState<Entry | null>(null);
   const [turns, setTurns] = useState<Entry[]>([]);
 
@@ -250,6 +252,7 @@ export default function App({
   }
 
   function updateInput(value: string) {
+    if (!value || shared?.kind === "error") setShared(null);
     wake.current?.stop();
     cancel();
     setInput(value);
@@ -258,12 +261,32 @@ export default function App({
   }
 
   function changeTab(value: Tab) {
+    if (shared) { setShared(null); setInput(""); setResult(null); }
     cancel();
     stop();
     setMessage("");
     if (value === "lens" || tab === "lens") { setInput(""); setResult(null); }
     setTab(value);
   }
+
+  useEffect(() => {
+    const receive = () => {
+      const value = receiveSharedContent();
+      if (!value) return;
+      stop();
+      cancel();
+      setTab("translate");
+      setFull("");
+      setLensBusy(false);
+      setInput(value.kind === "ready" ? value.text : "");
+      setResult(null);
+      setMessage("");
+      setShared(value);
+    };
+    const unsubscribe = window.vokawaAnywhere?.subscribe(receive);
+    receive();
+    return () => unsubscribe?.();
+  }, []);
 
   function setting<K extends keyof Settings>(key: K, value: Settings[K]) {
     cancel();
@@ -353,6 +376,12 @@ export default function App({
     setSource(target);
     setTarget(source);
 
+    if (shared?.kind === "ready") {
+      setResult(null);
+      setMessage("");
+      return;
+    }
+    setShared(null);
     if (tab === "translate" && result) {
       setInput(result.targetText);
     } else {
@@ -416,8 +445,9 @@ export default function App({
   }
 
   async function translate(text = input, wakeSignal?: AbortSignal) {
-    if (!text.trim() || wakeSignal?.aborted || (tab === "lens" && (lensBusy || text.length > 3000))) return;
+    if ((shared && wakeSignal) || !text.trim() || wakeSignal?.aborted || (tab === "lens" && (lensBusy || text.length > 3000))) return;
 
+    setShared(null);
     if (wakeSignal) {
       stopSound();
       mic.current.stop();
@@ -503,15 +533,14 @@ export default function App({
         );
       }
 
-      const localized = nativeTranslation(data, snapshot, to);
       const entry: Entry = {
         id: crypto.randomUUID(),
         source: from,
         target: to,
         sourceText: snapshot,
-        targetText: localized.translation,
-        engine: localized.engine || settings.translationProvider,
-        notice: localized.notice,
+        targetText: data.translation,
+        engine: data.engine || settings.translationProvider,
+        notice: data.notice,
         favorite: false,
       };
 
@@ -766,6 +795,8 @@ export default function App({
 
           {(tab === "translate" || tab === "chat" || tab === "lens") && (
             <>
+              {tab === "translate" && shared && <AnywhereNotice value={shared} discard={() => { stop(); updateInput(""); setShared(null); }} />}
+              {tab === "translate" && !shared && <div className="anywhere-link"><a href={`${import.meta.env.BASE_URL}anywhere.html`}>{t("从其他 App 分享文字 · 安装 Anywhere", "Share text from other apps · Set up Anywhere")}</a></div>}
               <div className="language-bar">
                 <LanguageSelect
                   label={t("从", "FROM")}
@@ -875,7 +906,7 @@ export default function App({
                           : () => void translate()
                       }
                     >
-                      {busy ? t("取消", "Cancel") : t("翻译", "Translate")}
+                      {busy ? t("取消", "Cancel") : shared?.kind === "ready" ? t("确认并翻译", "Confirm and translate") : t("翻译", "Translate")}
                       <Icon name={busy ? "close" : "arrow"} />
                     </button>
                   </div>
@@ -964,7 +995,7 @@ export default function App({
                 </button>
               </div>
 
-              {tab !== "lens" && <details
+              {tab !== "lens" && !shared && <details
                 className="wake-card"
                 onToggle={(e) => {
                   if (!e.currentTarget.open) wake.current?.stop();

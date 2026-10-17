@@ -1588,3 +1588,10 @@ input[type="range"] {
 .nav-item.active { background: linear-gradient(110deg, #b8a4cf1c, #b8a4cf05); border-color: #b8a4cf25; }
 button.primary { background: linear-gradient(115deg, #c0aed9, #c6afbb 65%, #c9ad9d); color: #211c28; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }
+
+/* Shared text stays in memory until the user confirms translation. */
+.anywhere-notice { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 20px; margin-bottom:20px; border:1px solid #c0aed940; border-radius:16px; background:#c0aed90b; }
+.anywhere-notice div { flex:1; min-width:200px; }
+.anywhere-notice p { font-size:13px; line-height:1.7; color:var(--muted); margin:8px 0 0; }
+.anywhere-link { text-align:right; margin-bottom:16px; font-size:12px; }
+.anywhere-link a { color:var(--muted); text-decoration:underline; text-underline-offset:4px; }
