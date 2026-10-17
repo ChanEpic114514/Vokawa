@@ -1,6 +1,6 @@
 {
   "name": "vokawa",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,17 +10,21 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:live-translation": "node tests/live-translation.mjs",
-    "predev": "python3 scripts/restore_audio.py",
-    "prebuild": "python3 scripts/restore_audio.py"
+    "predev": "python3 scripts/restore_audio.py && node scripts/prepare-ocr.mjs",
+    "prebuild": "python3 scripts/restore_audio.py && node scripts/prepare-ocr.mjs"
   },
   "dependencies": {
     "opencc-js": "1.4.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "tesseract.js": "7.0.0",
     "to-jyutping": "3.1.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@tesseract.js-data/chi_sim": "1.0.0",
+    "@tesseract.js-data/chi_tra": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",

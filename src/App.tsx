@@ -1,3 +1,4 @@
+import { LensPanel } from "./LensPanel";
 import { CaptureAurora } from "./CaptureAurora";
 import { RELEASE } from "./release";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -20,12 +21,13 @@ import { onlineTranslate } from "./translation";
 import { nativeTranslation } from "./hk-native";
 import { WakePanel, type WakeHandle } from "./WakePanel";
 
-export type Tab = "translate" | "chat" | "sound" | "book" | "settings";
+export type Tab = "translate" | "lens" | "chat" | "sound" | "book" | "settings";
 
-const tabs: Tab[] = ["translate", "chat", "sound", "book", "settings"];
+const tabs: Tab[] = ["translate", "lens", "chat", "sound", "book", "settings"];
 
 const tabNames: Record<Tab, [string, string]> = {
   translate: ["翻译", "Translate"],
+  lens: ["镜头", "Lens"],
   chat: ["对话", "Converse"],
   sound: ["听读", "Listen"],
   book: ["记录", "Phrasebook"],
@@ -35,6 +37,7 @@ const tabNames: Record<Tab, [string, string]> = {
 const titles = tabNames;
 
 const descriptions: Record<Tab, [string, string]> = {
+  lens: ["拍照识字，翻译并朗读", "Capture text, translate and listen"],
   translate: [
     "英语、普通话与粤语互译",
     "Translate between English, Mandarin and Cantonese",
@@ -195,6 +198,7 @@ export default function App({
   const [turns, setTurns] = useState<Entry[]>([]);
 
   const [busy, setBusy] = useState(false);
+  const [lensBusy, setLensBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [message, setMessage] = useState("");
   const [recording, setRecording] = useState(false);
@@ -257,6 +261,7 @@ export default function App({
     cancel();
     stop();
     setMessage("");
+    if (value === "lens" || tab === "lens") { setInput(""); setResult(null); }
     setTab(value);
   }
 
@@ -411,7 +416,7 @@ export default function App({
   }
 
   async function translate(text = input, wakeSignal?: AbortSignal) {
-    if (!text.trim() || wakeSignal?.aborted) return;
+    if (!text.trim() || wakeSignal?.aborted || (tab === "lens" && (lensBusy || text.length > 3000))) return;
 
     if (wakeSignal) {
       stopSound();
@@ -759,7 +764,7 @@ export default function App({
 
           <CaptureAurora onStop={stop} />
 
-          {(tab === "translate" || tab === "chat") && (
+          {(tab === "translate" || tab === "chat" || tab === "lens") && (
             <>
               <div className="language-bar">
                 <LanguageSelect
@@ -788,6 +793,7 @@ export default function App({
                 </span>
               </div>
 
+              {tab === "lens" && <LensPanel source={source} onText={updateInput} onPrepare={() => { stop(); updateInput(""); }} onBusy={setLensBusy} />}
               <div className="translation-grid">
                 <section className="panel input-panel">
                   <div className="panel-heading">
@@ -810,11 +816,9 @@ export default function App({
                   </div>
 
                   <textarea
+                    disabled={tab === "lens" && lensBusy}
                     aria-label={t("待翻译内容", "Text to translate")}
-                    placeholder={t(
-                      "有什么想说的？",
-                      "What would you like to say?",
-                    )}
+                    placeholder={tab === "lens" ? t("识别后在这里校对文字，再点击翻译。", "Review recognized text here, then select Translate.") : t("有什么想说的？", "What would you like to say?")}
                     value={input}
                     maxLength={3000}
                     onChange={(e) => updateInput(e.target.value)}
@@ -841,6 +845,7 @@ export default function App({
                           ? "record-button recording"
                           : "record-button"
                       }
+                      disabled={tab === "lens" && lensBusy}
                       onClick={
                         recording ? () => mic.current.stop() : dictate
                       }
@@ -860,7 +865,7 @@ export default function App({
 
                     <button
                       className="primary"
-                      disabled={!busy && !input.trim()}
+                      disabled={!busy && (!input.trim() || (tab === "lens" && (lensBusy || input.length > 3000)))}
                       onClick={
                         busy
                           ? () => {
@@ -959,7 +964,7 @@ export default function App({
                 </button>
               </div>
 
-              <details
+              {tab !== "lens" && <details
                 className="wake-card"
                 onToggle={(e) => {
                   if (!e.currentTarget.open) wake.current?.stop();
@@ -993,7 +998,7 @@ export default function App({
                   }}
                   onText={(text, signal) => translate(text, signal)}
                 />
-              </details>
+              </details>}
 
               {tab === "chat" && (
                 <section className="conversation">

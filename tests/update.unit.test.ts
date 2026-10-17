@@ -50,6 +50,6 @@ describe("PWA recovery", () => {
     expect(/\/api\//.test("/Vokawa/api/update.html")).toBe(true);
     const config = readFileSync("vite.config.ts", "utf8");
     expect(config).toContain("skipWaiting: true");
-    expect(config).toContain('globIgnores: ["api/update.html"]');
+    expect(config).toContain('globIgnores: ["api/update.html", "ocr/**"]');
   });
 });

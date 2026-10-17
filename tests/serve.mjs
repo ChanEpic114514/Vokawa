@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 const root = path.resolve("dist");
 const types = {
+  ".wasm": "application/wasm",
   ".html": "text/html",
   ".js": "text/javascript",
   ".css": "text/css",

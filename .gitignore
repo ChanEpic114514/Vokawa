@@ -12,3 +12,6 @@ test-results/
 
 # Restored automatically from the lossless repository audio package
 /public/audio/
+
+# Copied from pinned dependencies before dev/build
+/public/ocr/

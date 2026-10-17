@@ -31,8 +31,17 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        globIgnores: ["api/update.html"],
+        globIgnores: ["api/update.html", "ocr/**"],
         runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/ocr\/v1\//.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "vokawa-ocr-v1",
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 16, purgeOnQuotaError: true },
+            },
+          },
           {
             urlPattern: /\/audio\/(?:ekho|words|sentences)\/[a-z0-9-]+\.wav$/,
             handler: "CacheFirst",
